@@ -173,15 +173,7 @@
       <div id="savedList" class="saved-list"><div class="empty-events">No saved matches yet.</div></div>
       <div class="upload-box">
         <div class="upload-box-heading"><div><strong>Private match archive</strong><p class="panel-hint">Saved matches remain on this device until they are uploaded to the private archive.</p></div><span id="uploadQueueBadge" class="tag">0 pending</span></div>
-        <details class="upload-settings">
-          <summary>Upload connection settings</summary>
-          <div class="field-grid field-grid-2 upload-settings-grid">
-            <label class="field"><span>Upload service URL</span><input id="uploadEndpoint" type="url" inputmode="url" placeholder="https://your-worker.workers.dev"><small>Enter the Cloudflare Worker address supplied by the administrator.</small></label>
-            <label class="field"><span>Union upload access code</span><input id="uploadAccessCode" type="password" autocomplete="off" placeholder="Enter the shared upload code"><small>This is not your GitHub token. Never enter a GitHub token here.</small></label>
-          </div>
-          <div class="upload-config-actions"><button id="saveUploadSettings" class="button button-secondary" type="button">Save and test connection</button><button id="forgetUploadSettings" class="button button-quiet" type="button">Forget settings</button></div>
-        </details>
-        <div class="upload-actions"><p id="uploadStatus" class="upload-status" role="status" aria-live="polite">Uploads are not configured. Matches can still be saved locally.</p><button id="syncNow" class="button button-primary" type="button">Sync pending matches</button></div>
+        <div class="upload-actions"><p id="uploadStatus" class="upload-status" role="status" aria-live="polite">Matches save on this device and upload automatically when an internet connection is available.</p><button id="syncNow" class="button button-primary" type="button">Sync now</button></div>
       </div>
     </section>
 
@@ -190,7 +182,7 @@
       <p>For private evaluation only. DLS is proprietary; confirm applicable ICC permissions before sharing the calculator or its calculation implementation with others.</p>
     </section>
   </main>
-  <footer class="footer"><span>DLS 6.0 · Offline-first umpire tool</span><span id="appVersion">Build 0.5.1</span></footer>
+  <footer class="footer"><span>DLS 6.0 · Offline-first umpire tool</span><span id="appVersion">Build 0.5.2</span></footer>
   <script type="module" src="app.js"></script>
 </body>
 </html>
