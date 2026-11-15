@@ -132,11 +132,11 @@ No Version 2.0 release date or final release build is assigned by this roadmap.
 |---|---|
 | Version 1.0 · Build 0.5.4 | Current Production release |
 | Version 1.0 evaluation | Two Titans Umpire Executive members are testing |
-| Tabbed application structure | Proposed; tab names, order and functionality to be defined |
+| Tabbed application structure | Initial six-tab prototype implemented in Development for review; structure and functionality remain subject to refinement |
 | Titans-inspired visual refresh | Proposed; design ideas to be reviewed |
 | DLS report presentation redesign | Proposed; existing content to be retained |
-| Help section and contextual report guidance | Proposed; topics and report-link behaviour to be defined |
-| Time-based interruption calculations | Proposed; awaiting review of four calculation forms and applicable PCs |
+| Help section and contextual report guidance | Help tab placeholder implemented in Development; content and contextual report links remain to be designed |
+| Time-based interruption calculations | Appendix A source tables captured in the Development prototype; calculation logic and validation remain outstanding; Appendices B–D await their source forms and applicable PCs |
 | Version 2.0 Development implementation | Not yet started under this roadmap |
 | Production promotion | Not authorised by this roadmap |
 
