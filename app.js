@@ -174,8 +174,8 @@ $('secondOvers').addEventListener('input', handleCoreInputChange);
 $('minOversPerSide').addEventListener('input', handleCoreInputChange);
 $('penaltyRuns').addEventListener('input', handleCoreInputChange);
 $('matchName').addEventListener('input', handleCoreInputChange);
-$('capturerFirstName').addEventListener('input', handleCoreInputChange);
-$('capturerSurname').addEventListener('input', handleCoreInputChange);
+$('reportCapturerFirstName').addEventListener('input', handleCoreInputChange);
+$('reportCapturerSurname').addEventListener('input', handleCoreInputChange);
 
 function applyMatchType(type, { presetOvers = true, preserveOtherMinimum = false } = {}) {
   const preset = MATCH_TYPES[type];
@@ -358,13 +358,6 @@ function validateFormControls() {
   const hasType = !!type;
   if (!hasType) add('matchType', 'Select a match type before calculating.');
 
-  const capturerFirstName = $('capturerFirstName').value.trim();
-  const capturerSurname = $('capturerSurname').value.trim();
-  if (!capturerFirstName) add('capturerFirstName', 'Enter the first name of the person capturing this match.');
-  else if (capturerFirstName.length > 60) add('capturerFirstName', 'First name must be 60 characters or fewer.');
-  if (!capturerSurname) add('capturerSurname', 'Enter the surname of the person capturing this match.');
-  else if (capturerSurname.length > 60) add('capturerSurname', 'Surname must be 60 characters or fewer.');
-
   let firstOvers = null;
   if (hasType) {
     const text = $('firstOvers').value.trim();
@@ -438,9 +431,9 @@ function collectInput() {
   const minOversPerSide = Number($('minOversPerSide').value);
   return {
     matchName: $('matchName').value.trim(),
-    capturerFirstName: $('capturerFirstName').value.trim(),
-    capturerSurname: $('capturerSurname').value.trim(),
-    capturedBy: `${$('capturerFirstName').value.trim()} ${$('capturerSurname').value.trim()}`,
+    capturerFirstName: $('reportCapturerFirstName').value.trim() || 'Name',
+    capturerSurname: $('reportCapturerSurname').value.trim() || 'Surname',
+    capturedBy: `${$('reportCapturerFirstName').value.trim() || 'Name'} ${$('reportCapturerSurname').value.trim() || 'Surname'}`,
     matchType: $('matchType').value,
     matchTypeLabel: currentMatchTypeLabel(),
     minOversPerSide,
@@ -589,8 +582,8 @@ $('resetButton').addEventListener('click', () => {
   suspendAutoCalculation = true;
   validationStarted = false;
   $('matchName').value = '';
-  $('capturerFirstName').value = '';
-  $('capturerSurname').value = '';
+  $('reportCapturerFirstName').value = 'Name';
+  $('reportCapturerSurname').value = 'Surname';
   $('matchType').value = '';
   previousMatchType = '';
   $('firstOvers').value = '';
@@ -613,7 +606,7 @@ $('resetButton').addEventListener('click', () => {
   clearOutput();
   clearControlErrors();
   $('formError').textContent = '';
-  $('autoCalcStatus').textContent = 'Select a match type, enter the capturer’s first name and surname, and enter the match details. Calculations update automatically.';
+  $('autoCalcStatus').textContent = 'Select a match type and enter the match details. Calculations update automatically.';
 if (navigator.onLine) setTimeout(() => uploadPendingMatches({ automatic: true }), 900);
   syncSecondOversFromFirst();
   suspendAutoCalculation = false;
@@ -635,7 +628,7 @@ function safeFilename(value) {
 }
 function scenarioDocument() {
   if (!currentInput || !currentResult) throw new Error('Calculate a match first.');
-  return { app: 'DLS 6.0 Umpire Calculator', appVersion: '0.5.0', exportedAt: new Date().toISOString(), input: currentInput, resultSummary: { target: currentResult.target, lambda: currentResult.lambda, adjustmentFactor: currentResult.adjustmentFactor, noResult: currentResult.noResult } };
+  return { app: 'DLS 6.0 Umpire Calculator', appVersion: '0.5.1', exportedAt: new Date().toISOString(), input: currentInput, resultSummary: { target: currentResult.target, lambda: currentResult.lambda, adjustmentFactor: currentResult.adjustmentFactor, noResult: currentResult.noResult } };
 }
 function getReportReadiness() {
   return evaluateReportReadiness({
@@ -702,6 +695,7 @@ function createReportHtml() {
   const venue = $('reportVenue').value.trim() || '—';
   const dateValue = $('reportDate').value;
   const matchDate = dateValue ? new Date(`${dateValue}T12:00:00`).toLocaleDateString('en-ZA', { day:'2-digit', month:'short', year:'numeric' }) : new Date().toLocaleDateString('en-ZA', { day:'2-digit', month:'short', year:'numeric' });
+  const capturedBy = `${$('reportCapturerFirstName').value.trim() || 'Name'} ${$('reportCapturerSurname').value.trim() || 'Surname'}`;
   const resultText = describeReportOutcome({ result: currentResult, finalRuns, wicketsLost, chasingTeam: team2 });
   const matchTitle = currentInput.matchName || `${team1} vs ${team2}`;
   const firstTable = reportEventRows(currentInput.firstEvents);
@@ -709,7 +703,7 @@ function createReportHtml() {
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>DLS Match Report - ${escapeHtml(matchTitle)}</title><style>
     *{box-sizing:border-box}body{font:14px/1.5 Arial,sans-serif;color:#17263d;margin:0;background:#eef2f7}.page{max-width:900px;margin:24px auto;background:#fff;padding:38px 44px;box-shadow:0 8px 28px #12243a18}.top{border-bottom:3px solid #17395f;padding-bottom:18px;margin-bottom:22px}.eyebrow{font-size:11px;letter-spacing:.13em;color:#38649a;font-weight:bold;text-transform:uppercase}.top h1{font-size:27px;margin:5px 0;color:#132b49}.sub{color:#64748b}.meta,.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:18px 0}.tile{border:1px solid #dbe3ed;border-radius:8px;padding:11px}.tile small{display:block;color:#718096;font-size:10px;text-transform:uppercase;font-weight:bold}.tile strong{display:block;font-size:16px;margin-top:4px}.section{margin:22px 0}.section h2{font-size:16px;color:#18385f;border-bottom:1px solid #dbe3ed;padding-bottom:7px}.callout{background:#edf5ff;border-left:4px solid #2a65ac;padding:14px 16px;margin:16px 0}.callout strong{font-size:18px}.result{background:#edf8f1;border-left:4px solid #258354;padding:14px 16px;margin:16px 0}.result strong{color:#17603f}table{width:100%;border-collapse:collapse;font-size:12px;margin-top:10px}th,td{text-align:left;padding:8px;border:1px solid #dbe3ed}th{background:#f0f4f8;color:#354a66}.foot{border-top:1px solid #dbe3ed;margin-top:30px;padding-top:12px;font-size:10px;color:#77869a}.actions{display:flex;gap:10px;justify-content:flex-end;margin:0 auto 18px;max-width:900px}.actions button{background:#245ea9;color:#fff;border:0;border-radius:7px;padding:10px 15px;font-weight:bold;cursor:pointer}@media(max-width:620px){.page{margin:0;padding:22px 16px}.meta,.stats{grid-template-columns:1fr 1fr}.actions{padding:12px;justify-content:stretch}.actions button{flex:1}}@media print{body{background:#fff}.page{box-shadow:none;margin:0 auto;padding:10mm;max-width:none}.actions{display:none}.section,.callout,.result{break-inside:avoid}}
     </style></head><body><div class="actions"><button onclick="window.print()">Print / Save as PDF</button></div><main class="page"><header class="top"><div class="eyebrow">DLS 6.0 · Match report</div><h1>${escapeHtml(matchTitle)}</h1><div class="sub">${escapeHtml(competition)} · ${escapeHtml(venue)} · ${escapeHtml(matchDate)}</div></header>
-    <div class="meta"><div class="tile"><small>Captured by</small><strong>${escapeHtml(currentInput.capturedBy || `${currentInput.capturerFirstName || ''} ${currentInput.capturerSurname || ''}`.trim())}</strong></div><div class="tile"><small>Match format</small><strong>${escapeHtml(currentInput.matchTypeLabel)}</strong></div><div class="tile"><small>Minimum overs per side</small><strong>${currentInput.minOversPerSide}</strong></div><div class="tile"><small>Overs at start</small><strong>${escapeHtml(formatOvers(currentInput.firstOvers))}</strong></div></div>
+    <div class="meta"><div class="tile"><small>Captured by</small><strong>${escapeHtml(capturedBy)}</strong></div><div class="tile"><small>Match format</small><strong>${escapeHtml(currentInput.matchTypeLabel)}</strong></div><div class="tile"><small>Minimum overs per side</small><strong>${currentInput.minOversPerSide}</strong></div><div class="tile"><small>Overs at start</small><strong>${escapeHtml(formatOvers(currentInput.firstOvers))}</strong></div></div>
     <section class="section"><h2>First innings — ${escapeHtml(team1)}</h2><div class="stats"><div class="tile"><small>Final score</small><strong>${currentInput.firstRuns}</strong></div><div class="tile"><small>Scheduled overs</small><strong>${escapeHtml(formatOvers(currentInput.firstOvers))}</strong></div><div class="tile"><small>Overs lost</small><strong>${escapeHtml(prettyOvers(currentResult.firstResourcesLost))}</strong></div><div class="tile"><small>Overs available</small><strong>${escapeHtml(prettyOvers(currentResult.firstRemainingOvers))}</strong></div></div><h3>Interruption record</h3><table><thead><tr><th>#</th><th>Overs bowled</th><th>Score</th><th>Wickets</th><th>Overs lost</th></tr></thead><tbody>${firstTable}</tbody></table></section>
     <section class="section"><h2>Second innings — ${escapeHtml(team2)}</h2><div class="stats"><div class="tile"><small>Target</small><strong>${currentResult.target}</strong></div><div class="tile"><small>Final score</small><strong>${finalRuns}${wicketsLost == null ? '' : `/${wicketsLost}`}</strong></div><div class="tile"><small>Overs at finish</small><strong>${escapeHtml(finalOvers || 'Not entered')}</strong></div></div><p>Overs allocated at start of chase: <strong>${escapeHtml(formatOvers(currentInput.secondOvers))}</strong>. Second-innings overs lost: <strong>${escapeHtml(prettyOvers(currentResult.secondResourcesLost))}</strong>. Revised chase length: <strong>${escapeHtml(currentResult.finalSecondOvers)}</strong>.</p><h3>Interruption record</h3><table><thead><tr><th>#</th><th>Overs bowled</th><th>Score</th><th>Wickets</th><th>Overs lost</th></tr></thead><tbody>${secondTable}</tbody></table></section>
     <div class="callout"><div>Revised DLS target</div><strong>${currentResult.target} runs</strong><div>First-innings lambda: ${currentResult.lambda.toFixed(4)} · Adjustment factor: ${currentResult.adjustmentFactor.toFixed(9)}</div></div><div class="result"><strong>RESULT</strong><br>${escapeHtml(resultText)}</div>
@@ -894,9 +888,9 @@ $('syncNow').addEventListener('click', () => uploadPendingMatches());
 function inputFromUiRaw(input) {
   return {
     matchName: input.matchName || '',
-    capturerFirstName: input.capturerFirstName || '',
-    capturerSurname: input.capturerSurname || '',
-    capturedBy: input.capturedBy || `${input.capturerFirstName || ''} ${input.capturerSurname || ''}`.trim(),
+    capturerFirstName: input.capturerFirstName || 'Name',
+    capturerSurname: input.capturerSurname || 'Surname',
+    capturedBy: input.capturedBy || `${input.capturerFirstName || 'Name'} ${input.capturerSurname || 'Surname'}`.trim(),
     matchType: input.matchType || 'odi',
     matchTypeLabel: input.matchTypeLabel || '',
     minOversPerSide: input.minOversPerSide ?? 20,
@@ -918,8 +912,8 @@ function loadScenario(input) {
   previousMatchType = $('matchType').value;
   applyMatchType(matchType, { presetOvers: false, preserveOtherMinimum: true });
   $('matchName').value = input.matchName || '';
-  $('capturerFirstName').value = input.capturerFirstName || '';
-  $('capturerSurname').value = input.capturerSurname || '';
+  $('reportCapturerFirstName').value = input.capturerFirstName || 'Name';
+  $('reportCapturerSurname').value = input.capturerSurname || 'Surname';
   $('firstOvers').value = input.firstOvers;
   $('firstRuns').value = input.firstRuns;
   $('minOversPerSide').value = input.minOversPerSide ?? (MATCH_TYPES[matchType]?.minOvers ?? '');
@@ -945,6 +939,8 @@ function loadScenario(input) {
     secondTeam: $('reportSecondTeam').value.trim(),
     venue: $('reportVenue').value.trim(),
     matchDate: $('reportDate').value || null,
+    capturerFirstName: $('reportCapturerFirstName').value.trim() || 'Name',
+    capturerSurname: $('reportCapturerSurname').value.trim() || 'Surname',
     reportReady: getReportReadiness().eligible,
     reportOutcomeCode: getReportReadiness().code || null
   };
@@ -963,9 +959,6 @@ function archiveRecordFor(item) {
 $('saveScenario').addEventListener('click', () => {
   try {
     const doc = scenarioDocument();
-    if (!doc.input.capturerFirstName?.trim() || !doc.input.capturerSurname?.trim()) {
-      throw new Error('Enter the match capturer’s first name and surname before saving.');
-    }
     const saved = getSaved();
     const id = crypto.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
     const item = {
@@ -1008,5 +1001,5 @@ updateEmptyMessages();
 if ($('reportDate')) $('reportDate').value = new Date().toLocaleDateString('en-CA');
 clearControlErrors();
 updateReportAvailability();
-$('autoCalcStatus').textContent = 'Select a match type, enter the capturer’s first name and surname, and enter the match details. Calculations update automatically.';
+$('autoCalcStatus').textContent = 'Select a match type and enter the match details. Calculations update automatically.';
 if (navigator.onLine) setTimeout(() => uploadPendingMatches({ automatic: true }), 900);
