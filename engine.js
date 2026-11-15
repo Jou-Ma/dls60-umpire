@@ -328,6 +328,14 @@ export function calculateMatch(input) {
   const adj = adjustmentFactor(firstOvers, firstRuns, firstEvents, lambda);
   const target = calculateTarget(firstOvers, firstRuns, firstEvents, secondOvers, secondEvents, penaltyRuns, lambda, adj);
   const finalSecondOvers = Math.max(0, secondOvers - secondEvents.reduce((s, e) => s + e.oversLost, 0));
+  const minOversPerSide = input.minOversPerSide == null ? null : Number(input.minOversPerSide);
+  if (minOversPerSide != null && (!Number.isInteger(minOversPerSide) || minOversPerSide < 1 || minOversPerSide > 99)) {
+    throw new Error('Minimum overs per side must be a whole number between 1 and 99.');
+  }
+  const noResult = minOversPerSide != null && oversToBalls(finalSecondOvers) < minOversPerSide * 6;
+  const noResultReason = noResult
+    ? `Only ${ballsToOvers(oversToBalls(finalSecondOvers))} overs are available to the chasing side; the minimum is ${minOversPerSide} overs.`
+    : null;
 
   // The reference par tables span the scheduled second-innings length.
   // The revised length is reported separately; rows are par-score checkpoints
@@ -350,6 +358,7 @@ export function calculateMatch(input) {
   return {
     lambda, adjustmentFactor: adj, target, targetLabel: `Target ${target}`,
     finalSecondOvers: ballsToOvers(oversToBalls(finalSecondOvers)), overRows, ballRows,
+    minOversPerSide, noResult, noResultReason,
     firstResourcesLost: firstEvents.reduce((s, e) => s + e.oversLost, 0),
     secondResourcesLost: secondEvents.reduce((s, e) => s + e.oversLost, 0),
     firstEvents, secondEvents,

@@ -44,3 +44,17 @@
   .event-field small{font-size:8px}
   .event-row .remove-event{grid-column:3;grid-row:1 / span 4;align-self:center;height:38px}
 }
+
+/* v0.3.0: configurable minimum overs, minimum-overs result status and printable report */
+.minimum-overs-outcome{border:1px solid #f1c3bd;background:#fff1ef;color:#922c22;border-radius:11px;padding:13px 15px;margin:0 0 13px;font-size:13px;font-weight:800}
+.report-panel{margin-top:16px}
+.report-score-grid{margin-bottom:12px}
+.report-details{border:1px solid #e1e7ef;border-radius:10px;padding:10px 12px;background:#f9fbfd}
+.report-details summary{cursor:pointer;color:#36516f;font-size:12px;font-weight:750}
+.report-meta-grid{margin-top:13px}
+.report-actions{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:14px}
+.report-availability{font-size:12px;color:#69798f;margin:0;max-width:680px}
+.report-actions .button:disabled{opacity:.48;cursor:not-allowed;box-shadow:none}
+.tag{background:#f5f7fa}
+@media(max-width:850px){.report-actions{align-items:stretch;flex-direction:column}.report-actions .button{width:100%}}
+@media(max-width:560px){.report-score-grid,.report-meta-grid{grid-template-columns:1fr 1fr}.report-score-grid .field:first-child,.report-meta-grid .field:first-child{grid-column:span 2}.report-actions{gap:9px}}

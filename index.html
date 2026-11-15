@@ -51,9 +51,9 @@
               <option value="odi">ODI regulations (50 overs/innings; min. 20 overs/side)</option>
               <option value="t20">Twenty20 (20 overs/innings; min. 5 overs/side)</option>
               <optgroup label="Other match types">
-                <option value="other-50-10">50 overs/innings; min. 10 overs/side</option>
-                <option value="other-45-20">45 overs/innings; min. 20 overs/side</option>
-                <option value="other-40-10">40 overs/innings; min. 10 overs/side</option>
+                <option value="other-50-10">50 overs/innings (default minimum 10)</option>
+                <option value="other-45-20">45 overs/innings (default minimum 20)</option>
+                <option value="other-40-10">40 overs/innings (default minimum 10)</option>
                 <option value="custom">Custom match type…</option>
               </optgroup>
             </select>
@@ -64,7 +64,7 @@
         </div>
         <div class="field-grid field-grid-3 field-grid-bottom">
           <label class="field"><span>Second-innings scheduled overs <small id="secondOversModeLabel">automatic</small></span><input id="secondOvers" type="text" inputmode="decimal" value="50.0" readonly required><small id="secondOversHelp" class="field-help">Automatically follows the first-innings overs lost.</small></label>
-          <label class="field"><span>Minimum overs per side <small id="minimumOversModeLabel">match type setting</small></span><input id="minOversPerSide" type="number" min="0" max="99" step="1" value="20" readonly></label>
+          <label class="field"><span>Minimum overs per side <small id="minimumOversModeLabel">fixed by match type</small></span><input id="minOversPerSide" type="number" min="1" max="99" step="1" value="20" readonly><small id="minimumOversHelp" class="field-help">ODI minimum: 20 overs per side.</small></label>
           <label class="field"><span>Penalty runs <small>optional</small></span><input id="penaltyRuns" type="number" min="0" max="999" step="1" value="0"></label>
         </div>
         <div class="auto-allocation-row">
@@ -103,6 +103,7 @@
         <div><div class="step-label">04 · CALCULATION RESULT</div><h2 id="resultTitle">Revised target</h2><p id="resultSub" class="panel-hint"></p></div>
         <span class="verified-tag"><span>●</span> Local calculation</span>
       </div>
+      <div id="minimumOversOutcome" class="minimum-overs-outcome hidden" role="status" aria-live="polite"></div>
       <div class="result-grid">
         <article class="target-card">
           <div class="target-label">SECOND INNINGS TARGET</div>
@@ -114,6 +115,32 @@
         <article class="metric-card"><div class="metric-label">Revised chase length</div><div class="metric-value" id="revisedOvers">—</div><div class="metric-note">After second-innings losses</div></article>
       </div>
       <div class="resource-summary" id="resourceSummary"></div>
+
+      <section class="panel report-panel" aria-labelledby="reportHeading">
+        <div class="panel-heading">
+          <div><div class="step-label">MATCH REPORT</div><h2 id="reportHeading">DLS match report</h2><p class="panel-hint">Enter the chasing team's final score. The report becomes available only when the target has been reached and the minimum-overs requirement is satisfied.</p></div>
+          <span id="reportGateTag" class="tag">Target not yet achieved</span>
+        </div>
+        <div class="field-grid field-grid-3 report-score-grid">
+          <label class="field"><span>Chasing team's final score</span><input id="secondFinalRuns" type="number" min="0" max="999" step="1" placeholder="Enter final runs"></label>
+          <label class="field"><span>Wickets lost at finish <small>optional</small></span><input id="secondFinalWickets" type="number" min="0" max="10" step="1" placeholder="e.g. 4"></label>
+          <label class="field"><span>Overs at finish <small>optional · cricket notation</small></span><input id="secondFinalOvers" type="text" inputmode="decimal" placeholder="e.g. 38.4"></label>
+        </div>
+        <details class="report-details">
+          <summary>Additional report details (optional)</summary>
+          <div class="field-grid field-grid-3 report-meta-grid">
+            <label class="field"><span>Competition</span><input id="reportCompetition" type="text" maxlength="100" placeholder="e.g. Titans Premier League"></label>
+            <label class="field"><span>Team batting first</span><input id="reportFirstTeam" type="text" maxlength="80" placeholder="First innings team"></label>
+            <label class="field"><span>Team batting second</span><input id="reportSecondTeam" type="text" maxlength="80" placeholder="Chasing team"></label>
+            <label class="field"><span>Venue</span><input id="reportVenue" type="text" maxlength="100" placeholder="Ground / venue"></label>
+            <label class="field"><span>Match date</span><input id="reportDate" type="date"></label>
+          </div>
+        </details>
+        <div class="report-actions">
+          <p id="reportAvailability" class="report-availability" aria-live="polite">Enter the chasing team's final score to check whether the target was achieved.</p>
+          <button id="createMatchReport" class="button button-primary" type="button" disabled>Create DLS match report</button>
+        </div>
+      </section>
 
       <section class="table-panel">
         <div class="table-heading"><div><div class="step-label">05 · PAR SCORE TABLES</div><h2>Par score reference</h2><p class="panel-hint">Rows are generated from the same DLS par-score calculation used for the target. Wickets down are shown from 0 to 9.</p></div><button id="exportCsv" class="button button-outline" type="button">Export current table CSV</button></div>
@@ -146,7 +173,7 @@
       <p>For private evaluation only. DLS is proprietary; confirm applicable ICC permissions before sharing the calculator or its calculation implementation with others.</p>
     </section>
   </main>
-  <footer class="footer"><span>DLS 6.0 · Offline-first umpire tool</span><span id="appVersion">Build 0.2.0</span></footer>
+  <footer class="footer"><span>DLS 6.0 · Offline-first umpire tool</span><span id="appVersion">Build 0.3.0</span></footer>
   <script type="module" src="app.js"></script>
 </body>
 </html>
