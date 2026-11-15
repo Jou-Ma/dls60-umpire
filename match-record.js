@@ -1,10 +1,8 @@
-export const APP_VERSION = '0.5.0';
+export const APP_VERSION = '0.5.1';
 
 export function normaliseCapturer(firstName, surname) {
-  const first = String(firstName ?? '').trim().replace(/\s+/g, ' ');
-  const last = String(surname ?? '').trim().replace(/\s+/g, ' ');
-  if (!first) throw new Error('The match capturer first name is required.');
-  if (!last) throw new Error('The match capturer surname is required.');
+  const first = String(firstName ?? '').trim().replace(/\s+/g, ' ') || 'Name';
+  const last = String(surname ?? '').trim().replace(/\s+/g, ' ') || 'Surname';
   if (first.length > 60 || last.length > 60) throw new Error('Capturer names must be 60 characters or fewer.');
   if (/[<>\u0000-\u001f]/.test(first) || /[<>\u0000-\u001f]/.test(last)) throw new Error('Capturer names contain unsupported characters.');
   return { firstName: first, surname: last, fullName: `${first} ${last}` };
