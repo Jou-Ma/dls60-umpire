@@ -13,7 +13,7 @@
 
 ### Product version
 - Formal product versions identify significant product releases.
-- The intended first formal release is **Version 1.0**, once the PoC is accepted as release-ready.
+- The first formal product release is **Version 1.0**, based on the tested Build 0.5.4 baseline.
 - A later major product milestone may be **Version 2.0**, **Version 3.0**, and so on.
 - The project convention does not require decimal product versions such as 1.1 or 1.2.
 
@@ -29,9 +29,7 @@
 - ICC DLS 6.0 is the accepted reference standard for this project. No work on a hypothetical later DLS version is in scope unless the project direction changes.
 
 ### Identifiers to display
-Before formal release, identify the application as a PoC and display its build and calculation standard.
-
-After formal release, display all three, for example:
+The formal release display identifies the product version, included build and calculation standard, for example:
 
 **Version 1.0 · Build 0.5.4 · ICC DLS 6.0**
 
@@ -393,7 +391,7 @@ The repository's current Git history contains reliable individual commits for th
 
 | Product version | Release date | Release build | Status |
 |---|---|---|---|
-| Not yet released | — | — | Proof of Concept |
+| 1.0 | 15 November 2026 | 0.5.4 | Released; first formal product release |
 
 ## 6. Required entry format for future builds
 
@@ -424,3 +422,31 @@ For each formal product release, record:
 - Known limitations.
 - Approved documentation set.
 - Release acceptance/approval.
+
+
+### Version 1.0 — First formal product release
+
+**Release date:** 15 November 2026  
+**Included development build:** 0.5.4  
+**Calculation standard:** ICC DLS 6.0  
+**Release baseline:** Build 0.5.4, including the zero-resource interruption guard.
+
+**Release decision:** The project owner accepted the current build for the first formal product release after testing multiple scenarios. The only reported calculation error of concern was the `NaN` adjustment-factor issue, which was corrected in Build 0.5.4 and retested.
+
+**Included functionality:**
+- DLS 6.0 target and resource calculations for supported match formats.
+- Multiple first- and second-innings interruption handling.
+- Minimum-overs rules and No Result handling.
+- Over-by-over and ball-by-ball par-score tables.
+- Match reports, local match records, JSON import/export and CSV export.
+- Offline-capable PWA installation and private match-archive upload workflow.
+
+**Validation evidence:** The user reported successful testing across multiple scenarios. Recorded comparisons include 10 reference target scenarios; 41 over-by-over rows and 241 ball-by-ball rows with no mismatches in the earlier comparison; and a later 1,170-value ball-by-ball comparison for a custom 60-over interrupted match with no discrepancies observed. These results are scenario-specific and are not an exhaustive validation of every possible input combination.
+
+**Known limitations and cautions:**
+- The implementation has not been exhaustively validated across every possible input combination or competition condition.
+- Official match decisions must be cross-checked using the authorised DLS application and applicable playing conditions.
+- DLS is proprietary. This independent tool is not an ICC product and is not certified, endorsed or approved by the ICC. Distribution and use remain subject to applicable permissions and licensing requirements.
+- Local saved records are device/browser-specific unless uploaded to the separately configured private archive.
+
+**Release metadata:** The application footer and release-facing documentation identify the release as **Version 1.0 · Build 0.5.4 · ICC DLS 6.0**. The calculation logic remains the Build 0.5.4 implementation; the release metadata does not represent a new calculation build.
