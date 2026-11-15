@@ -1,10 +1,19 @@
-import { calculateMatch, parseOvers, prepareEvents, ballsToOvers } from './engine.js';
+import { calculateMatch, parseOvers, prepareEvents, ballsToOvers, oversToBalls, deriveSecondOvers } from './engine.js';
 
 const $ = (id) => document.getElementById(id);
 let currentResult = null;
 let currentInput = null;
 let activeTable = 'overs';
 let deferredInstallPrompt = null;
+let previousMatchType = $('matchType').value;
+
+const MATCH_TYPES = {
+  odi: { overs: 50, minOvers: 20, label: 'ODI regulations (50 overs/innings; min. 20 overs/side)' },
+  t20: { overs: 20, minOvers: 5, label: 'Twenty20 (20 overs/innings; min. 5 overs/side)' },
+  'other-50-10': { overs: 50, minOvers: 10, label: 'Other: 50 overs/innings; min. 10 overs/side' },
+  'other-45-20': { overs: 45, minOvers: 20, label: 'Other: 45 overs/innings; min. 20 overs/side' },
+  'other-40-10': { overs: 40, minOvers: 10, label: 'Other: 40 overs/innings; min. 10 overs/side' }
+};
 
 function setConnectionStatus() {
   const el = $('connectionState');
@@ -34,15 +43,19 @@ $('installButton').addEventListener('click', async () => {
   $('installButton').classList.add('hidden');
 });
 
+function formatOvers(value) {
+  return ballsToOvers(oversToBalls(Number(value)));
+}
+
 function addEventRow(containerId, row = {}) {
   const container = $(containerId);
   const wrapper = document.createElement('div');
   wrapper.className = 'event-row';
   wrapper.innerHTML = `
-    <input type="text" class="event-overs" inputmode="decimal" placeholder="e.g. 17.3" aria-label="Overs bowled at interruption" value="">
-    <input type="number" class="event-score" min="0" max="999" step="1" placeholder="Runs" aria-label="Score at interruption">
-    <input type="number" class="event-wickets" min="0" max="10" step="1" placeholder="Wkts" aria-label="Wickets down at interruption" value="0">
-    <input type="text" class="event-loss" inputmode="decimal" placeholder="e.g. 4.0 or A" aria-label="Overs lost at interruption">
+    <label class="event-field"><span>Overs bowled at stoppage</span><input type="text" class="event-overs" inputmode="decimal" placeholder="e.g. 17.3" aria-label="Overs bowled at stoppage"></label>
+    <label class="event-field"><span>Runs at stoppage</span><input type="number" class="event-score" min="0" max="999" step="1" placeholder="e.g. 125" aria-label="Runs at stoppage"></label>
+    <label class="event-field"><span>Wickets down</span><input type="number" class="event-wickets" min="0" max="10" step="1" placeholder="e.g. 3" aria-label="Wickets down at stoppage" value="0"></label>
+    <label class="event-field"><span>Overs lost</span><input type="text" class="event-loss" inputmode="decimal" placeholder="e.g. 4.0 or A" aria-label="Overs lost at interruption"><small>Use A for all remaining overs.</small></label>
     <button class="remove-event" type="button" aria-label="Remove interruption">×</button>`;
   wrapper.querySelector('.event-overs').value = row.oversBowled ?? '';
   wrapper.querySelector('.event-score').value = row.scoreAtEvent ?? '';
@@ -51,9 +64,14 @@ function addEventRow(containerId, row = {}) {
   wrapper.querySelector('.remove-event').addEventListener('click', () => {
     wrapper.remove();
     updateEmptyMessages();
+    if (containerId === 'firstEvents') syncSecondOversFromFirst();
   });
+  if (containerId === 'firstEvents') {
+    wrapper.querySelectorAll('input').forEach(input => input.addEventListener('input', syncSecondOversFromFirst));
+  }
   container.appendChild(wrapper);
   updateEmptyMessages();
+  if (containerId === 'firstEvents') syncSecondOversFromFirst();
 }
 
 function updateEmptyMessages() {
@@ -72,24 +90,129 @@ function readEventRows(containerId) {
   }));
 }
 
+function isBlankEventRow(row) {
+  return !row.oversBowled && !row.oversLost && !row.scoreAtEvent && (!row.wickets || row.wickets === '0');
+}
+
+function firstInningsAllocationPreview() {
+  const scheduled = Number($('firstOvers').value);
+  if (!Number.isInteger(scheduled) || scheduled < 1 || scheduled > 99) {
+    return { valid: false, message: 'Enter valid first-innings scheduled overs to calculate the chase allocation.' };
+  }
+  const rows = readEventRows('firstEvents').filter(row => !isBlankEventRow(row));
+  if (!rows.length) return { valid: true, totalLostBalls: 0, remainingOvers: `${scheduled}.0`, remainingBalls: scheduled * 6 };
+
+  // Only use a fully entered first-innings event. An incomplete row must not
+  // silently change the scheduled overs for the chasing side.
+  const completeRows = [];
+  for (let i = 0; i < rows.length; i++) {
+    if (!rows[i].oversBowled || !rows[i].oversLost) {
+      return { valid: false, message: `Complete interruption ${i + 1}: enter both overs bowled and overs lost.` };
+    }
+    completeRows.push(rows[i]);
+  }
+  try {
+    const events = prepareEvents(completeRows, scheduled, 'First innings');
+    const remainingOvers = deriveSecondOvers(scheduled, events);
+    const remainingBalls = oversToBalls(parseOvers(remainingOvers));
+    const totalLostBalls = scheduled * 6 - remainingBalls;
+    return { valid: true, events, totalLostBalls, remainingOvers, remainingBalls };
+  } catch (error) {
+    return { valid: false, message: error?.message || 'Check the first-innings interruption entries.' };
+  }
+}
+
+function syncSecondOversFromFirst() {
+  const automatic = $('autoSecondOvers').checked;
+  $('secondOvers').readOnly = automatic;
+  $('secondOversModeLabel').textContent = automatic ? 'automatic' : 'manual override';
+  if (!automatic) {
+    $('secondOversHelp').textContent = 'Manual override is on. Enter the scheduled overs allocated to the chasing side in cricket notation.';
+    return;
+  }
+  const preview = firstInningsAllocationPreview();
+  if (!preview.valid) {
+    $('secondOversHelp').textContent = `${preview.message} The last valid allocation is retained until the entry is complete.`;
+    return;
+  }
+  $('secondOvers').value = preview.remainingOvers;
+  const totalLost = ballsToOvers(preview.totalLostBalls);
+  const scheduled = Number($('firstOvers').value);
+  $('secondOversHelp').textContent = preview.totalLostBalls
+    ? `${scheduled}.0 overs − ${totalLost} overs lost = ${preview.remainingOvers} overs automatically allocated to the chasing side.`
+    : `No first-innings overs lost: the chasing side is allocated ${preview.remainingOvers} overs.`;
+}
+
+$('autoSecondOvers').addEventListener('change', syncSecondOversFromFirst);
+$('firstOvers').addEventListener('input', syncSecondOversFromFirst);
+
+function applyMatchType(type, { presetOvers = true } = {}) {
+  const preset = MATCH_TYPES[type];
+  const isCustom = type === 'custom';
+  $('minOversPerSide').readOnly = !isCustom;
+  $('minimumOversModeLabel').textContent = isCustom ? 'enter playing-conditions minimum' : 'match type setting';
+  if (preset) {
+    if (presetOvers) $('firstOvers').value = String(preset.overs);
+    $('minOversPerSide').value = String(preset.minOvers);
+  } else if (isCustom) {
+    if (!$('minOversPerSide').value || $('minOversPerSide').value === '20') $('minOversPerSide').value = '10';
+  }
+  syncSecondOversFromFirst();
+}
+
+$('matchType').addEventListener('change', () => {
+  const nextType = $('matchType').value;
+  const hasEvents = $('firstEvents').children.length || $('secondEvents').children.length;
+  if (hasEvents && !confirm('Changing match type changes the innings allocation. Clear the interruption entries and continue?')) {
+    $('matchType').value = previousMatchType;
+    return;
+  }
+  if (hasEvents) {
+    $('firstEvents').replaceChildren();
+    $('secondEvents').replaceChildren();
+    updateEmptyMessages();
+  }
+  previousMatchType = nextType;
+  applyMatchType(nextType);
+  clearOutput();
+});
+
+function currentMatchTypeLabel() {
+  const type = $('matchType').value;
+  if (type === 'custom') return `Custom (${Number($('firstOvers').value)} overs/innings; min. ${Number($('minOversPerSide').value)} overs/side)`;
+  return MATCH_TYPES[type]?.label || $('matchType').selectedOptions[0]?.textContent || 'Custom match type';
+}
+
 function collectInput() {
   const firstOvers = Number($('firstOvers').value);
-  const secondOvers = Number($('secondOvers').value);
+  const firstRuns = Number($('firstRuns').value);
   const firstRows = readEventRows('firstEvents');
   const secondRows = readEventRows('secondEvents');
   const firstEvents = prepareEvents(firstRows, firstOvers, 'First innings');
+  const autoSecondOvers = $('autoSecondOvers').checked;
+  if (autoSecondOvers) syncSecondOversFromFirst();
+  const secondOvers = parseOvers($('secondOvers').value, 'Second-innings scheduled overs');
   const secondEvents = prepareEvents(secondRows, secondOvers, 'Second innings');
-  const firstRuns = Number($('firstRuns').value);
+  if (!Number.isInteger(firstRuns) || firstRuns < 0) throw new Error('First-innings total runs must be a whole number of 0 or more.');
   for (let i = 0; i < firstEvents.length; i++) {
     if (firstEvents[i].scoreAtEvent != null && firstEvents[i].scoreAtEvent > firstRuns) {
       throw new Error(`First-innings interruption ${i + 1}: score at stoppage cannot exceed the final innings total.`);
     }
   }
+  const minOversPerSide = Number($('minOversPerSide').value);
+  if (!Number.isInteger(minOversPerSide) || minOversPerSide < 0 || minOversPerSide > 99) {
+    throw new Error('Minimum overs per side must be a whole number between 0 and 99.');
+  }
   return {
     matchName: $('matchName').value.trim(),
+    matchType: $('matchType').value,
+    matchTypeLabel: currentMatchTypeLabel(),
+    minOversPerSide,
+    autoSecondOvers,
     firstOvers,
     firstRuns,
     secondOvers,
+    secondOversNotation: $('secondOvers').value,
     penaltyRuns: Number($('penaltyRuns').value || 0),
     firstEvents,
     secondEvents,
@@ -108,7 +231,7 @@ function displayResult(input, result) {
   currentResult = result;
   $('results').classList.remove('hidden');
   $('resultTitle').textContent = input.matchName || 'Revised target';
-  $('resultSub').textContent = `${input.firstOvers} overs · ${input.firstRuns} runs · second innings scheduled for ${input.secondOvers} overs`;
+  $('resultSub').textContent = `${input.matchTypeLabel} · First innings: ${input.firstOvers} overs / ${input.firstRuns} runs · chasing allocation: ${formatOvers(input.secondOvers)} overs`;
   $('targetNumber').textContent = result.target.toLocaleString('en-ZA');
   $('lambdaValue').textContent = result.lambda.toFixed(4);
   $('adjustmentValue').textContent = result.adjustmentFactor.toFixed(9);
@@ -118,7 +241,9 @@ function displayResult(input, result) {
     `First-innings overs lost: ${prettyOvers(result.firstResourcesLost)}`,
     `Second-innings overs lost: ${prettyOvers(result.secondResourcesLost)}`,
     `First-innings interruptions: ${input.firstEvents.length}`,
-    `Second-innings interruptions: ${input.secondEvents.length}`
+    `Second-innings interruptions: ${input.secondEvents.length}`,
+    `Minimum overs per side: ${input.minOversPerSide}`,
+    `Chase allocation: ${input.autoSecondOvers ? 'automatic' : 'manual override'}`
   ];
   for (const label of chips) {
     const chip = document.createElement('span');
@@ -139,7 +264,6 @@ function renderTable(type) {
     tab.setAttribute('aria-selected', String(active));
   });
   const rows = type === 'overs' ? currentResult.overRows : currentResult.ballRows;
-  const unit = type === 'overs' ? 'over-by-over' : 'ball-by-ball';
   $('tableMeta').textContent = `${rows.length} ${type === 'overs' ? 'over' : 'ball'} positions · par score across 0–9 wickets · complete revised innings`;
   const table = $('parTable');
   const thead = table.querySelector('thead');
@@ -191,13 +315,20 @@ function clearOutput() {
 }
 $('resetButton').addEventListener('click', () => {
   $('matchName').value = '';
+  $('matchType').value = 'odi';
+  previousMatchType = 'odi';
   $('firstOvers').value = '50';
   $('firstRuns').value = '300';
-  $('secondOvers').value = '50';
+  $('minOversPerSide').value = '20';
+  $('minOversPerSide').readOnly = true;
+  $('minimumOversModeLabel').textContent = 'match type setting';
+  $('autoSecondOvers').checked = true;
+  $('secondOvers').value = '50.0';
   $('penaltyRuns').value = '0';
   $('firstEvents').replaceChildren();
   $('secondEvents').replaceChildren();
   updateEmptyMessages();
+  syncSecondOversFromFirst();
   clearOutput();
   $('matchName').focus();
 });
@@ -218,7 +349,7 @@ function safeFilename(value) {
 }
 function scenarioDocument() {
   if (!currentInput || !currentResult) throw new Error('Calculate a match first.');
-  return { app: 'DLS 6.0 Umpire Calculator', appVersion: '0.1.0', exportedAt: new Date().toISOString(), input: currentInput, resultSummary: { target: currentResult.target, lambda: currentResult.lambda, adjustmentFactor: currentResult.adjustmentFactor } };
+  return { app: 'DLS 6.0 Umpire Calculator', appVersion: '0.2.0', exportedAt: new Date().toISOString(), input: currentInput, resultSummary: { target: currentResult.target, lambda: currentResult.lambda, adjustmentFactor: currentResult.adjustmentFactor } };
 }
 $('exportScenario').addEventListener('click', () => {
   try { downloadBlob(`${safeFilename(currentInput?.matchName)}.json`, JSON.stringify(scenarioDocument(), null, 2), 'application/json'); }
@@ -250,7 +381,7 @@ function renderSaved() {
     const row = document.createElement('div'); row.className = 'saved-item';
     const info = document.createElement('div');
     const title = document.createElement('strong'); title.textContent = item.input.matchName || 'Unnamed match';
-    const detail = document.createElement('small'); detail.textContent = `${item.input.firstRuns} runs · target ${item.summary.target} · ${new Date(item.savedAt).toLocaleString()}`;
+    const detail = document.createElement('small'); detail.textContent = `${item.input.matchTypeLabel || item.input.matchType || 'Match'} · ${item.input.firstRuns} runs · target ${item.summary.target} · ${new Date(item.savedAt).toLocaleString()}`;
     info.append(title, detail);
     const actions = document.createElement('div'); actions.className = 'saved-actions';
     const load = document.createElement('button'); load.className = 'button button-secondary'; load.type = 'button'; load.textContent = 'Load'; load.addEventListener('click', () => loadScenario(item.input));
@@ -260,22 +391,40 @@ function renderSaved() {
 }
 function inputFromUiRaw(input) {
   return {
-    matchName: input.matchName || '', firstOvers: input.firstOvers, firstRuns: input.firstRuns,
-    secondOvers: input.secondOvers, penaltyRuns: input.penaltyRuns || 0,
-    firstEventRows: input.firstEventRows || [], secondEventRows: input.secondEventRows || []
+    matchName: input.matchName || '',
+    matchType: input.matchType || 'odi',
+    matchTypeLabel: input.matchTypeLabel || '',
+    minOversPerSide: input.minOversPerSide ?? 20,
+    autoSecondOvers: input.autoSecondOvers !== false,
+    firstOvers: input.firstOvers,
+    firstRuns: input.firstRuns,
+    secondOvers: input.secondOvers,
+    secondOversNotation: formatOvers(input.secondOvers),
+    penaltyRuns: input.penaltyRuns || 0,
+    firstEventRows: input.firstEventRows || [],
+    secondEventRows: input.secondEventRows || []
   };
 }
 function loadScenario(input) {
+  const matchType = input.matchType && (MATCH_TYPES[input.matchType] || input.matchType === 'custom') ? input.matchType : 'custom';
+  $('matchType').value = matchType;
+  previousMatchType = $('matchType').value;
+  applyMatchType($('matchType').value, { presetOvers: false });
   $('matchName').value = input.matchName || '';
   $('firstOvers').value = input.firstOvers;
   $('firstRuns').value = input.firstRuns;
-  $('secondOvers').value = input.secondOvers;
+  $('minOversPerSide').value = input.minOversPerSide ?? (MATCH_TYPES[matchType]?.minOvers ?? 10);
+  $('minOversPerSide').readOnly = matchType !== 'custom';
+  $('minimumOversModeLabel').textContent = matchType === 'custom' ? 'enter playing-conditions minimum' : 'match type setting';
+  $('autoSecondOvers').checked = input.autoSecondOvers !== false;
+  $('secondOvers').value = input.secondOversNotation || formatOvers(input.secondOvers);
   $('penaltyRuns').value = input.penaltyRuns || 0;
   $('firstEvents').replaceChildren();
   $('secondEvents').replaceChildren();
   (input.firstEventRows || []).forEach(row => addEventRow('firstEvents', row));
   (input.secondEventRows || []).forEach(row => addEventRow('secondEvents', row));
   updateEmptyMessages();
+  syncSecondOversFromFirst();
   $('matchForm').requestSubmit();
 }
 $('saveScenario').addEventListener('click', () => {

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dls60-umpire-shell-v1';
+const CACHE_NAME = 'dls60-umpire-shell-v2';
 const APP_SHELL = [
   './', './index.html', './styles.css', './app.js', './engine.js',
   './manifest.webmanifest', './icon.svg', './icon-192.png', './icon-512.png'

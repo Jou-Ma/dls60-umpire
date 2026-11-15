@@ -50,6 +50,13 @@ export function ballsToOvers(balls) {
   return `${whole}.${rem}`;
 }
 
+/** Return the second-innings allocation after the first-innings event losses. */
+export function deriveSecondOvers(firstOvers, firstEvents) {
+  const scheduledBalls = oversToBalls(firstOvers);
+  const lostBalls = (firstEvents || []).reduce((sum, event) => sum + oversToBalls(event.oversLost), 0);
+  return ballsToOvers(Math.max(0, scheduledBalls - lostBalls));
+}
+
 function setupWicketArrays() {
   const a = Array(11).fill(0);
   for (let i = 0; i < 10; i++) a[10] = a[10] + (i === 0 ? 0 : MODEL.pw11[i]);
@@ -311,7 +318,7 @@ export function calculateMatch(input) {
   const firstEvents = input.firstEvents || [];
   const secondEvents = input.secondEvents || [];
   if (!(Number.isInteger(firstOvers) && firstOvers > 0 && firstOvers <= 100)) throw new Error('First-innings overs must be a whole number from 1 to 100.');
-  if (!(Number.isInteger(secondOvers) && secondOvers > 0 && secondOvers <= 100)) throw new Error('Second-innings overs must be a whole number from 1 to 100.');
+  if (!(Number.isFinite(secondOvers) && secondOvers > 0 && secondOvers <= 100)) throw new Error('Second-innings overs must be greater than 0 and no more than 100 overs. Use cricket notation for partial overs.');
   if (!(Number.isInteger(firstRuns) && firstRuns >= 0)) throw new Error('First-innings runs must be a whole number of 0 or more.');
   if (!(Number.isInteger(penaltyRuns) && penaltyRuns >= 0)) throw new Error('Penalty runs must be a whole number of 0 or more.');
   validateEvents(firstEvents, firstOvers, 'First innings');

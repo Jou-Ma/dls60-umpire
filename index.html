@@ -46,14 +46,30 @@
           <span class="tag">Required</span>
         </div>
         <div class="field-grid field-grid-4">
+          <label class="field"><span>Match type</span>
+            <select id="matchType">
+              <option value="odi">ODI regulations (50 overs/innings; min. 20 overs/side)</option>
+              <option value="t20">Twenty20 (20 overs/innings; min. 5 overs/side)</option>
+              <optgroup label="Other match types">
+                <option value="other-50-10">50 overs/innings; min. 10 overs/side</option>
+                <option value="other-45-20">45 overs/innings; min. 20 overs/side</option>
+                <option value="other-40-10">40 overs/innings; min. 10 overs/side</option>
+                <option value="custom">Custom match type…</option>
+              </optgroup>
+            </select>
+          </label>
           <label class="field"><span>Match / fixture name <small>optional</small></span><input id="matchName" type="text" placeholder="e.g. Tuks 2 vs Irene" maxlength="80"></label>
-          <label class="field"><span>First innings overs</span><input id="firstOvers" type="number" min="1" max="100" step="1" value="50" required></label>
-          <label class="field"><span>First innings score</span><input id="firstRuns" type="number" min="0" max="999" step="1" value="300" required></label>
-          <label class="field"><span>Second innings overs</span><input id="secondOvers" type="number" min="1" max="100" step="1" value="50" required></label>
+          <label class="field"><span>First-innings scheduled overs</span><input id="firstOvers" type="number" min="1" max="99" step="1" value="50" required></label>
+          <label class="field"><span>First-innings total runs</span><input id="firstRuns" type="number" min="0" max="999" step="1" value="300" required></label>
         </div>
-        <div class="field-grid field-grid-2 field-grid-bottom">
+        <div class="field-grid field-grid-3 field-grid-bottom">
+          <label class="field"><span>Second-innings scheduled overs <small id="secondOversModeLabel">automatic</small></span><input id="secondOvers" type="text" inputmode="decimal" value="50.0" readonly required><small id="secondOversHelp" class="field-help">Automatically follows the first-innings overs lost.</small></label>
+          <label class="field"><span>Minimum overs per side <small id="minimumOversModeLabel">match type setting</small></span><input id="minOversPerSide" type="number" min="0" max="99" step="1" value="20" readonly></label>
           <label class="field"><span>Penalty runs <small>optional</small></span><input id="penaltyRuns" type="number" min="0" max="999" step="1" value="0"></label>
-          <div class="field helper-field"><span>Overs notation</span><p>Enter interruption overs as cricket notation: <strong>17.3</strong> means 17 overs and 3 balls, not 17.3 decimal overs.</p></div>
+        </div>
+        <div class="auto-allocation-row">
+          <label class="toggle-field"><input id="autoSecondOvers" type="checkbox" checked><span><strong>Automatically calculate second-innings overs</strong><small>First-innings scheduled overs less all first-innings interruption losses.</small></span></label>
+          <div class="overs-notation-help"><strong>Cricket overs notation:</strong> 17.3 means 17 overs and 3 balls, not 17.3 decimal overs. Use this notation for interruption entries and manual second-innings overs.</div>
         </div>
       </section>
 
@@ -62,7 +78,6 @@
           <div><div class="step-label">02 · FIRST INNINGS</div><h2>Batting first interruptions</h2><p class="panel-hint">Events must be entered in the order they happened. Overs bowled is cumulative from the start of the innings.</p></div>
           <button class="button button-outline" id="addFirstEvent" type="button"><span class="plus">＋</span> Add event</button>
         </div>
-        <div class="event-head"><span>Overs bowled</span><span>Score at stoppage</span><span>Wickets down</span><span>Overs lost</span><span></span></div>
         <div id="firstEvents" class="event-list"></div>
         <div id="firstEmpty" class="empty-events">No first-innings interruptions entered.</div>
       </section>
@@ -72,7 +87,6 @@
           <div><div class="step-label">03 · SECOND INNINGS</div><h2>Chasing-team interruptions</h2><p class="panel-hint">Enter the over position and wickets at each stoppage. Each event's overs lost is its individual loss, not a cumulative total.</p></div>
           <button class="button button-outline" id="addSecondEvent" type="button"><span class="plus">＋</span> Add event</button>
         </div>
-        <div class="event-head"><span>Overs bowled</span><span>Score at stoppage</span><span>Wickets down</span><span>Overs lost</span><span></span></div>
         <div id="secondEvents" class="event-list"></div>
         <div id="secondEmpty" class="empty-events">No second-innings interruptions entered.</div>
       </section>
@@ -132,7 +146,7 @@
       <p>For private evaluation only. DLS is proprietary; confirm applicable ICC permissions before sharing the calculator or its calculation implementation with others.</p>
     </section>
   </main>
-  <footer class="footer"><span>DLS 6.0 · Offline-first umpire tool</span><span id="appVersion">Build 0.1.0</span></footer>
+  <footer class="footer"><span>DLS 6.0 · Offline-first umpire tool</span><span id="appVersion">Build 0.2.0</span></footer>
   <script type="module" src="app.js"></script>
 </body>
 </html>
