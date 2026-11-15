@@ -628,7 +628,7 @@ function safeFilename(value) {
 }
 function scenarioDocument() {
   if (!currentInput || !currentResult) throw new Error('Calculate a match first.');
-  return { app: 'DLS 6.0 Umpire Calculator', appVersion: '0.5.1', exportedAt: new Date().toISOString(), input: currentInput, resultSummary: { target: currentResult.target, lambda: currentResult.lambda, adjustmentFactor: currentResult.adjustmentFactor, noResult: currentResult.noResult } };
+  return { app: 'DLS 6.0 Umpire Calculator', appVersion: '0.5.2', exportedAt: new Date().toISOString(), input: currentInput, resultSummary: { target: currentResult.target, lambda: currentResult.lambda, adjustmentFactor: currentResult.adjustmentFactor, noResult: currentResult.noResult } };
 }
 function getReportReadiness() {
   return evaluateReportReadiness({
@@ -768,12 +768,13 @@ function renderSaved() {
     actions.append(load, remove); row.append(info, actions); container.appendChild(row);
   }
 }
-const UPLOAD_CONFIG_KEY = 'dls60-umpire-upload-config-v1';
-function getUploadConfig() {
-  try { return JSON.parse(localStorage.getItem(UPLOAD_CONFIG_KEY) || '{}'); }
-  catch { return {}; }
-}
-function putUploadConfig(config) { localStorage.setItem(UPLOAD_CONFIG_KEY, JSON.stringify(config)); }
+// Private umpire-group archive endpoint. The shared upload code is intentionally
+// bundled for this small, trusted distribution group; it is not a confidential secret.
+const UPLOAD_CONFIG = Object.freeze({
+  endpoint: 'https://dls-match-archive.marius-schoeman123.workers.dev',
+  accessCode: 'A5tiqjRY3f3DOrmDVIATSGEVdcSejGOX'
+});
+function getUploadConfig() { return UPLOAD_CONFIG; }
 function updateUploadSummary(message = '') {
   const saved = getSaved();
   const pending = saved.filter(item => item.uploadStatus !== 'uploaded').length;
@@ -782,41 +783,10 @@ function updateUploadSummary(message = '') {
   const status = $('uploadStatus');
   if (!status) return;
   if (message) status.textContent = message;
-  else if (!getUploadConfig().endpoint) status.textContent = 'Uploads are not configured. Matches can still be saved locally.';
+  else if (!getUploadConfig().endpoint) status.textContent = 'Archive upload is unavailable. Matches can still be saved locally.';
   else if (!pending) status.textContent = 'All saved matches have been uploaded.';
   else if (!navigator.onLine) status.textContent = `${pending} match(es) waiting for an internet connection.`;
-  else status.textContent = `${pending} match(es) waiting to upload. Select Sync pending matches or wait for automatic sync.`;
-}
-function renderUploadSettings() {
-  const config = getUploadConfig();
-  $('uploadEndpoint').value = config.endpoint || '';
-  $('uploadAccessCode').value = config.accessCode || '';
-  updateUploadSummary();
-}
-function normaliseEndpoint(value) {
-  const url = new URL(value.trim());
-  if (url.protocol !== 'https:') throw new Error('The upload service must use an HTTPS address.');
-  return url.toString().replace(/\/$/, '');
-}
-async function saveAndTestUploadSettings() {
-  try {
-    const endpoint = normaliseEndpoint($('uploadEndpoint').value);
-    const accessCode = $('uploadAccessCode').value.trim();
-    if (!accessCode) throw new Error('Enter the union upload access code.');
-    $('saveUploadSettings').disabled = true;
-    updateUploadSummary('Checking the upload service…');
-    const response = await fetch(`${endpoint}/health`, { method: 'GET', cache: 'no-store' });
-    if (!response.ok) throw new Error(`Upload service check failed (HTTP ${response.status}).`);
-    const health = await response.json();
-    if (health.service !== 'dls-match-archive' || health.ready !== true) throw new Error('The address responded, but it does not look like the DLS match archive service.');
-    putUploadConfig({ endpoint, accessCode });
-    updateUploadSummary('Upload service connected. Pending matches will sync when online.');
-    await uploadPendingMatches({ automatic: true });
-  } catch (error) {
-    updateUploadSummary(error?.message || 'Could not test the upload service.');
-  } finally {
-    $('saveUploadSettings').disabled = false;
-  }
+  else status.textContent = `${pending} match(es) queued. They will upload automatically while online, or select Sync now.`;
 }
 async function uploadOneMatch(item, config) {
   const record = item.archiveRecord || archiveRecordFor(item);
@@ -874,15 +844,6 @@ async function uploadPendingMatches({ automatic = false } = {}) {
   else updateUploadSummary(`Sync finished. ${uploaded} uploaded; ${failed} failed. ${pending} remain pending.`);
   if (automatic && !uploaded && !failed) updateUploadSummary();
 }
-$('saveUploadSettings').addEventListener('click', saveAndTestUploadSettings);
-$('forgetUploadSettings').addEventListener('click', () => {
-  if (confirm('Forget the upload service address and access code on this device?')) {
-    localStorage.removeItem(UPLOAD_CONFIG_KEY);
-    $('uploadEndpoint').value = '';
-    $('uploadAccessCode').value = '';
-    updateUploadSummary('Upload settings removed. Saved matches remain on this device.');
-  }
-});
 $('syncNow').addEventListener('click', () => uploadPendingMatches());
 
 function inputFromUiRaw(input) {
@@ -996,7 +957,6 @@ $('importScenario').addEventListener('change', async (event) => {
 });
 
 renderSaved();
-renderUploadSettings();
 updateEmptyMessages();
 if ($('reportDate')) $('reportDate').value = new Date().toLocaleDateString('en-CA');
 clearControlErrors();
