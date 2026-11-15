@@ -505,8 +505,6 @@ function displayResult(input, result, { scroll = true, resetReport = false } = {
     $('secondFinalOvers').value = '';
   }
   updateReportAvailability();
-  $('lambdaValue').textContent = result.lambda.toFixed(4);
-  $('adjustmentValue').textContent = result.adjustmentFactor.toFixed(9);
   $('revisedOvers').textContent = result.finalSecondOvers;
   $('resourceSummary').replaceChildren();
   const chips = [
@@ -628,7 +626,7 @@ function safeFilename(value) {
 }
 function scenarioDocument() {
   if (!currentInput || !currentResult) throw new Error('Calculate a match first.');
-  return { app: 'DLS 6.0 Umpire Calculator', appVersion: '0.5.2', exportedAt: new Date().toISOString(), input: currentInput, resultSummary: { target: currentResult.target, lambda: currentResult.lambda, adjustmentFactor: currentResult.adjustmentFactor, noResult: currentResult.noResult } };
+  return { app: 'DLS 6.0 Umpire Calculator', appVersion: '0.5.3', exportedAt: new Date().toISOString(), input: currentInput, resultSummary: { target: currentResult.target, lambda: currentResult.lambda, adjustmentFactor: currentResult.adjustmentFactor, noResult: currentResult.noResult } };
 }
 function getReportReadiness() {
   return evaluateReportReadiness({
@@ -706,7 +704,7 @@ function createReportHtml() {
     <div class="meta"><div class="tile"><small>Captured by</small><strong>${escapeHtml(capturedBy)}</strong></div><div class="tile"><small>Match format</small><strong>${escapeHtml(currentInput.matchTypeLabel)}</strong></div><div class="tile"><small>Minimum overs per side</small><strong>${currentInput.minOversPerSide}</strong></div><div class="tile"><small>Overs at start</small><strong>${escapeHtml(formatOvers(currentInput.firstOvers))}</strong></div></div>
     <section class="section"><h2>First innings — ${escapeHtml(team1)}</h2><div class="stats"><div class="tile"><small>Final score</small><strong>${currentInput.firstRuns}</strong></div><div class="tile"><small>Scheduled overs</small><strong>${escapeHtml(formatOvers(currentInput.firstOvers))}</strong></div><div class="tile"><small>Overs lost</small><strong>${escapeHtml(prettyOvers(currentResult.firstResourcesLost))}</strong></div><div class="tile"><small>Overs available</small><strong>${escapeHtml(prettyOvers(currentResult.firstRemainingOvers))}</strong></div></div><h3>Interruption record</h3><table><thead><tr><th>#</th><th>Overs bowled</th><th>Score</th><th>Wickets</th><th>Overs lost</th></tr></thead><tbody>${firstTable}</tbody></table></section>
     <section class="section"><h2>Second innings — ${escapeHtml(team2)}</h2><div class="stats"><div class="tile"><small>Target</small><strong>${currentResult.target}</strong></div><div class="tile"><small>Final score</small><strong>${finalRuns}${wicketsLost == null ? '' : `/${wicketsLost}`}</strong></div><div class="tile"><small>Overs at finish</small><strong>${escapeHtml(finalOvers || 'Not entered')}</strong></div></div><p>Overs allocated at start of chase: <strong>${escapeHtml(formatOvers(currentInput.secondOvers))}</strong>. Second-innings overs lost: <strong>${escapeHtml(prettyOvers(currentResult.secondResourcesLost))}</strong>. Revised chase length: <strong>${escapeHtml(currentResult.finalSecondOvers)}</strong>.</p><h3>Interruption record</h3><table><thead><tr><th>#</th><th>Overs bowled</th><th>Score</th><th>Wickets</th><th>Overs lost</th></tr></thead><tbody>${secondTable}</tbody></table></section>
-    <div class="callout"><div>Revised DLS target</div><strong>${currentResult.target} runs</strong><div>First-innings lambda: ${currentResult.lambda.toFixed(4)} · Adjustment factor: ${currentResult.adjustmentFactor.toFixed(9)}</div></div><div class="result"><strong>RESULT</strong><br>${escapeHtml(resultText)}</div>
+    <div class="callout"><div>Revised DLS target</div><strong>${currentResult.target} runs</strong></div><div class="result"><strong>RESULT</strong><br>${escapeHtml(resultText)}</div>
     <footer class="foot">Generated locally by the private DLS 6.0 Umpire Calculator. This report is a user-generated calculation summary, not an ICC-issued or certified match report. Verify official match decisions against the authorised DLS application and applicable playing conditions.</footer></main></body></html>`;
 }
 
