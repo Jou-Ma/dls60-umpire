@@ -45,7 +45,7 @@
   .event-row .remove-event{grid-column:3;grid-row:1 / span 4;align-self:center;height:38px}
 }
 
-/* v0.3.0: configurable minimum overs, minimum-overs result status and printable report */
+/* v0.3.x: configurable minimum overs, minimum-overs result status and printable report */
 .minimum-overs-outcome{border:1px solid #f1c3bd;background:#fff1ef;color:#922c22;border-radius:11px;padding:13px 15px;margin:0 0 13px;font-size:13px;font-weight:800}
 .report-panel{margin-top:16px}
 .report-score-grid{margin-bottom:12px}

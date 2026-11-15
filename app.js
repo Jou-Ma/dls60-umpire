@@ -256,7 +256,7 @@ function displayResult(input, result) {
   const outcome = $('minimumOversOutcome');
   outcome.classList.toggle('hidden', !result.noResult);
   if (result.noResult) {
-    outcome.textContent = `NO RESULT: ${result.finalSecondOvers} overs were available to the chasing side; the minimum is ${input.minOversPerSide} overs.`;
+    outcome.textContent = `NO RESULT: ${result.noResultReason}`;
   }
   $('secondFinalRuns').value = '';
   $('secondFinalWickets').value = '';
@@ -293,7 +293,7 @@ function renderTable(type) {
     tab.setAttribute('aria-selected', String(active));
   });
   const rows = type === 'overs' ? currentResult.overRows : currentResult.ballRows;
-  $('tableMeta').textContent = `${rows.length} ${type === 'overs' ? 'over' : 'ball'} positions · par score across 0–9 wickets · complete revised innings`;
+  $('tableMeta').textContent = `${rows.length} ${type === 'overs' ? 'over' : 'ball'} positions · overs bowled ${rows[0]?.oversBowled ?? '—'} to ${rows.at(-1)?.oversBowled ?? '—'} · par score for 0–9 wickets`; 
   const table = $('parTable');
   const thead = table.querySelector('thead');
   const tbody = table.querySelector('tbody');
@@ -381,7 +381,7 @@ function safeFilename(value) {
 }
 function scenarioDocument() {
   if (!currentInput || !currentResult) throw new Error('Calculate a match first.');
-  return { app: 'DLS 6.0 Umpire Calculator', appVersion: '0.3.0', exportedAt: new Date().toISOString(), input: currentInput, resultSummary: { target: currentResult.target, lambda: currentResult.lambda, adjustmentFactor: currentResult.adjustmentFactor, noResult: currentResult.noResult } };
+  return { app: 'DLS 6.0 Umpire Calculator', appVersion: '0.3.1', exportedAt: new Date().toISOString(), input: currentInput, resultSummary: { target: currentResult.target, lambda: currentResult.lambda, adjustmentFactor: currentResult.adjustmentFactor, noResult: currentResult.noResult } };
 }
 function updateReportAvailability() {
   const button = $('createMatchReport');
@@ -399,7 +399,7 @@ function updateReportAvailability() {
     status.textContent = 'Calculate the DLS target, then enter the chasing team’s final score.';
   } else if (currentResult.noResult) {
     tag.textContent = 'No result';
-    status.textContent = `Report unavailable: the chasing allocation is below the ${currentInput.minOversPerSide}-over minimum.`;
+    status.textContent = `Report unavailable: ${currentResult.noResultReason}`;
   } else if (!scoreValid) {
     tag.textContent = 'Target not yet confirmed';
     status.textContent = `Enter the chasing team's final score. The target is ${currentResult.target}.`;

@@ -332,27 +332,43 @@ export function calculateMatch(input) {
   if (minOversPerSide != null && (!Number.isInteger(minOversPerSide) || minOversPerSide < 1 || minOversPerSide > 99)) {
     throw new Error('Minimum overs per side must be a whole number between 1 and 99.');
   }
-  const noResult = minOversPerSide != null && oversToBalls(finalSecondOvers) < minOversPerSide * 6;
+  const firstRemainingOvers = Math.max(0, firstOvers - firstEvents.reduce((s, e) => s + e.oversLost, 0));
+  const firstRemainingBalls = oversToBalls(firstRemainingOvers);
+  const finalSecondBalls = oversToBalls(finalSecondOvers);
+  const minimumFailedSides = [];
+  if (minOversPerSide != null) {
+    if (firstRemainingBalls < minOversPerSide * 6) {
+      minimumFailedSides.push(`first innings: ${ballsToOvers(firstRemainingBalls)} overs available`);
+    }
+    if (finalSecondBalls < minOversPerSide * 6) {
+      minimumFailedSides.push(`second innings: ${ballsToOvers(finalSecondBalls)} overs available`);
+    }
+  }
+  const noResult = minimumFailedSides.length > 0;
   const noResultReason = noResult
-    ? `Only ${ballsToOvers(oversToBalls(finalSecondOvers))} overs are available to the chasing side; the minimum is ${minOversPerSide} overs.`
+    ? `${minimumFailedSides.join('; ')}; the minimum is ${minOversPerSide} overs per side.`
     : null;
 
-  // The reference par tables span the scheduled second-innings length.
-  // The revised length is reported separately; rows are par-score checkpoints
-  // for every possible over/ball position in the scheduled innings.
-  const tableMaxBalls = oversToBalls(secondOvers);
+  // Match the DLS 6.0 table-generation sequence: iterate the original
+  // second-innings allocation, but only show positions whose remaining overs
+  // are within the final allocation after all second-innings interruptions.
+  // This means the first displayed row starts after the cumulative overs lost.
+  const tableInitialBalls = oversToBalls(secondOvers);
   const overRows = [];
-  for (let ballsBowled = 0; ballsBowled <= tableMaxBalls; ballsBowled += 6) {
-    const remaining = (tableMaxBalls - ballsBowled) / 6;
+  for (let ballsBowled = 0; ballsBowled <= tableInitialBalls; ballsBowled += 6) {
+    const remainingBalls = tableInitialBalls - ballsBowled;
+    if (remainingBalls > finalSecondBalls) continue;
+    const remaining = remainingBalls / 6;
     const cells = Array.from({ length: 10 }, (_, wickets) => parScore(remaining, wickets, target, firstRuns, lambda, adj));
-    overRows.push({ ballsBowled, oversBowled: ballsToOvers(ballsBowled), oversRemaining: ballsToOvers(tableMaxBalls - ballsBowled), par: cells });
+    overRows.push({ ballsBowled, oversBowled: ballsToOvers(ballsBowled), oversRemaining: ballsToOvers(remainingBalls), par: cells });
   }
   const ballRows = [];
-  const maxBalls = tableMaxBalls;
-  for (let ballsBowled = 0; ballsBowled <= maxBalls; ballsBowled++) {
-    const remaining = (maxBalls - ballsBowled) / 6;
+  for (let ballsBowled = 0; ballsBowled <= tableInitialBalls; ballsBowled++) {
+    const remainingBalls = tableInitialBalls - ballsBowled;
+    if (remainingBalls > finalSecondBalls) continue;
+    const remaining = remainingBalls / 6;
     const cells = Array.from({ length: 10 }, (_, wickets) => parScore(remaining, wickets, target, firstRuns, lambda, adj));
-    ballRows.push({ ballsBowled, oversBowled: ballsToOvers(ballsBowled), oversRemaining: ballsToOvers(maxBalls - ballsBowled), par: cells });
+    ballRows.push({ ballsBowled, oversBowled: ballsToOvers(ballsBowled), oversRemaining: ballsToOvers(remainingBalls), par: cells });
   }
 
   return {
@@ -362,7 +378,7 @@ export function calculateMatch(input) {
     firstResourcesLost: firstEvents.reduce((s, e) => s + e.oversLost, 0),
     secondResourcesLost: secondEvents.reduce((s, e) => s + e.oversLost, 0),
     firstEvents, secondEvents,
-    firstRemainingOvers: Math.max(0, firstOvers - firstEvents.reduce((s, e) => s + e.oversLost, 0)),
+    firstRemainingOvers,
     secondRemainingOvers: finalSecondOvers,
     model: 'DLS 6.0 bytecode port – validation build'
   };
