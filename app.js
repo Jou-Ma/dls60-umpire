@@ -1,5 +1,6 @@
 import { calculateMatch, parseOvers, prepareEvents, ballsToOvers, oversToBalls, deriveSecondOvers } from './engine.js';
 import { evaluateReportReadiness, describeReportOutcome } from './report.js';
+import { createMatchArchiveRecord } from './match-record.js';
 
 const $ = (id) => document.getElementById(id);
 let currentResult = null;
@@ -9,6 +10,7 @@ let deferredInstallPrompt = null;
 let previousMatchType = $('matchType').value || '';
 let validationStarted = false;
 let suspendAutoCalculation = false;
+let uploadInProgress = false;
 
 const MATCH_TYPES = {
   odi: { overs: 50, minOvers: 20, label: 'ODI regulations (50 overs/innings)' },
@@ -25,7 +27,7 @@ function setConnectionStatus() {
   el.classList.toggle('offline', !online);
   el.lastElementChild.textContent = online ? 'Online · offline-ready' : 'Offline · calculating locally';
 }
-window.addEventListener('online', setConnectionStatus);
+window.addEventListener('online', () => { setConnectionStatus(); uploadPendingMatches({ automatic: true }); });
 window.addEventListener('offline', setConnectionStatus);
 setConnectionStatus();
 
@@ -172,6 +174,8 @@ $('secondOvers').addEventListener('input', handleCoreInputChange);
 $('minOversPerSide').addEventListener('input', handleCoreInputChange);
 $('penaltyRuns').addEventListener('input', handleCoreInputChange);
 $('matchName').addEventListener('input', handleCoreInputChange);
+$('capturerFirstName').addEventListener('input', handleCoreInputChange);
+$('capturerSurname').addEventListener('input', handleCoreInputChange);
 
 function applyMatchType(type, { presetOvers = true, preserveOtherMinimum = false } = {}) {
   const preset = MATCH_TYPES[type];
@@ -354,6 +358,13 @@ function validateFormControls() {
   const hasType = !!type;
   if (!hasType) add('matchType', 'Select a match type before calculating.');
 
+  const capturerFirstName = $('capturerFirstName').value.trim();
+  const capturerSurname = $('capturerSurname').value.trim();
+  if (!capturerFirstName) add('capturerFirstName', 'Enter the first name of the person capturing this match.');
+  else if (capturerFirstName.length > 60) add('capturerFirstName', 'First name must be 60 characters or fewer.');
+  if (!capturerSurname) add('capturerSurname', 'Enter the surname of the person capturing this match.');
+  else if (capturerSurname.length > 60) add('capturerSurname', 'Surname must be 60 characters or fewer.');
+
   let firstOvers = null;
   if (hasType) {
     const text = $('firstOvers').value.trim();
@@ -427,6 +438,9 @@ function collectInput() {
   const minOversPerSide = Number($('minOversPerSide').value);
   return {
     matchName: $('matchName').value.trim(),
+    capturerFirstName: $('capturerFirstName').value.trim(),
+    capturerSurname: $('capturerSurname').value.trim(),
+    capturedBy: `${$('capturerFirstName').value.trim()} ${$('capturerSurname').value.trim()}`,
     matchType: $('matchType').value,
     matchTypeLabel: currentMatchTypeLabel(),
     minOversPerSide,
@@ -575,6 +589,8 @@ $('resetButton').addEventListener('click', () => {
   suspendAutoCalculation = true;
   validationStarted = false;
   $('matchName').value = '';
+  $('capturerFirstName').value = '';
+  $('capturerSurname').value = '';
   $('matchType').value = '';
   previousMatchType = '';
   $('firstOvers').value = '';
@@ -597,7 +613,8 @@ $('resetButton').addEventListener('click', () => {
   clearOutput();
   clearControlErrors();
   $('formError').textContent = '';
-  $('autoCalcStatus').textContent = 'Select a match type and enter the match details. Calculations update automatically.';
+  $('autoCalcStatus').textContent = 'Select a match type, enter the capturer’s first name and surname, and enter the match details. Calculations update automatically.';
+if (navigator.onLine) setTimeout(() => uploadPendingMatches({ automatic: true }), 900);
   syncSecondOversFromFirst();
   suspendAutoCalculation = false;
   $('matchType').focus();
@@ -618,7 +635,7 @@ function safeFilename(value) {
 }
 function scenarioDocument() {
   if (!currentInput || !currentResult) throw new Error('Calculate a match first.');
-  return { app: 'DLS 6.0 Umpire Calculator', appVersion: '0.4.1', exportedAt: new Date().toISOString(), input: currentInput, resultSummary: { target: currentResult.target, lambda: currentResult.lambda, adjustmentFactor: currentResult.adjustmentFactor, noResult: currentResult.noResult } };
+  return { app: 'DLS 6.0 Umpire Calculator', appVersion: '0.5.0', exportedAt: new Date().toISOString(), input: currentInput, resultSummary: { target: currentResult.target, lambda: currentResult.lambda, adjustmentFactor: currentResult.adjustmentFactor, noResult: currentResult.noResult } };
 }
 function getReportReadiness() {
   return evaluateReportReadiness({
@@ -692,7 +709,7 @@ function createReportHtml() {
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>DLS Match Report - ${escapeHtml(matchTitle)}</title><style>
     *{box-sizing:border-box}body{font:14px/1.5 Arial,sans-serif;color:#17263d;margin:0;background:#eef2f7}.page{max-width:900px;margin:24px auto;background:#fff;padding:38px 44px;box-shadow:0 8px 28px #12243a18}.top{border-bottom:3px solid #17395f;padding-bottom:18px;margin-bottom:22px}.eyebrow{font-size:11px;letter-spacing:.13em;color:#38649a;font-weight:bold;text-transform:uppercase}.top h1{font-size:27px;margin:5px 0;color:#132b49}.sub{color:#64748b}.meta,.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:18px 0}.tile{border:1px solid #dbe3ed;border-radius:8px;padding:11px}.tile small{display:block;color:#718096;font-size:10px;text-transform:uppercase;font-weight:bold}.tile strong{display:block;font-size:16px;margin-top:4px}.section{margin:22px 0}.section h2{font-size:16px;color:#18385f;border-bottom:1px solid #dbe3ed;padding-bottom:7px}.callout{background:#edf5ff;border-left:4px solid #2a65ac;padding:14px 16px;margin:16px 0}.callout strong{font-size:18px}.result{background:#edf8f1;border-left:4px solid #258354;padding:14px 16px;margin:16px 0}.result strong{color:#17603f}table{width:100%;border-collapse:collapse;font-size:12px;margin-top:10px}th,td{text-align:left;padding:8px;border:1px solid #dbe3ed}th{background:#f0f4f8;color:#354a66}.foot{border-top:1px solid #dbe3ed;margin-top:30px;padding-top:12px;font-size:10px;color:#77869a}.actions{display:flex;gap:10px;justify-content:flex-end;margin:0 auto 18px;max-width:900px}.actions button{background:#245ea9;color:#fff;border:0;border-radius:7px;padding:10px 15px;font-weight:bold;cursor:pointer}@media(max-width:620px){.page{margin:0;padding:22px 16px}.meta,.stats{grid-template-columns:1fr 1fr}.actions{padding:12px;justify-content:stretch}.actions button{flex:1}}@media print{body{background:#fff}.page{box-shadow:none;margin:0 auto;padding:10mm;max-width:none}.actions{display:none}.section,.callout,.result{break-inside:avoid}}
     </style></head><body><div class="actions"><button onclick="window.print()">Print / Save as PDF</button></div><main class="page"><header class="top"><div class="eyebrow">DLS 6.0 · Match report</div><h1>${escapeHtml(matchTitle)}</h1><div class="sub">${escapeHtml(competition)} · ${escapeHtml(venue)} · ${escapeHtml(matchDate)}</div></header>
-    <div class="meta"><div class="tile"><small>Match format</small><strong>${escapeHtml(currentInput.matchTypeLabel)}</strong></div><div class="tile"><small>Minimum overs per side</small><strong>${currentInput.minOversPerSide}</strong></div><div class="tile"><small>Overs at start</small><strong>${escapeHtml(formatOvers(currentInput.firstOvers))}</strong></div></div>
+    <div class="meta"><div class="tile"><small>Captured by</small><strong>${escapeHtml(currentInput.capturedBy || `${currentInput.capturerFirstName || ''} ${currentInput.capturerSurname || ''}`.trim())}</strong></div><div class="tile"><small>Match format</small><strong>${escapeHtml(currentInput.matchTypeLabel)}</strong></div><div class="tile"><small>Minimum overs per side</small><strong>${currentInput.minOversPerSide}</strong></div><div class="tile"><small>Overs at start</small><strong>${escapeHtml(formatOvers(currentInput.firstOvers))}</strong></div></div>
     <section class="section"><h2>First innings — ${escapeHtml(team1)}</h2><div class="stats"><div class="tile"><small>Final score</small><strong>${currentInput.firstRuns}</strong></div><div class="tile"><small>Scheduled overs</small><strong>${escapeHtml(formatOvers(currentInput.firstOvers))}</strong></div><div class="tile"><small>Overs lost</small><strong>${escapeHtml(prettyOvers(currentResult.firstResourcesLost))}</strong></div><div class="tile"><small>Overs available</small><strong>${escapeHtml(prettyOvers(currentResult.firstRemainingOvers))}</strong></div></div><h3>Interruption record</h3><table><thead><tr><th>#</th><th>Overs bowled</th><th>Score</th><th>Wickets</th><th>Overs lost</th></tr></thead><tbody>${firstTable}</tbody></table></section>
     <section class="section"><h2>Second innings — ${escapeHtml(team2)}</h2><div class="stats"><div class="tile"><small>Target</small><strong>${currentResult.target}</strong></div><div class="tile"><small>Final score</small><strong>${finalRuns}${wicketsLost == null ? '' : `/${wicketsLost}`}</strong></div><div class="tile"><small>Overs at finish</small><strong>${escapeHtml(finalOvers || 'Not entered')}</strong></div></div><p>Overs allocated at start of chase: <strong>${escapeHtml(formatOvers(currentInput.secondOvers))}</strong>. Second-innings overs lost: <strong>${escapeHtml(prettyOvers(currentResult.secondResourcesLost))}</strong>. Revised chase length: <strong>${escapeHtml(currentResult.finalSecondOvers)}</strong>.</p><h3>Interruption record</h3><table><thead><tr><th>#</th><th>Overs bowled</th><th>Score</th><th>Wickets</th><th>Overs lost</th></tr></thead><tbody>${secondTable}</tbody></table></section>
     <div class="callout"><div>Revised DLS target</div><strong>${currentResult.target} runs</strong><div>First-innings lambda: ${currentResult.lambda.toFixed(4)} · Adjustment factor: ${currentResult.adjustmentFactor.toFixed(9)}</div></div><div class="result"><strong>RESULT</strong><br>${escapeHtml(resultText)}</div>
@@ -746,7 +763,10 @@ function renderSaved() {
     const row = document.createElement('div'); row.className = 'saved-item';
     const info = document.createElement('div');
     const title = document.createElement('strong'); title.textContent = item.input.matchName || 'Unnamed match';
-    const detail = document.createElement('small'); detail.textContent = `${item.input.matchTypeLabel || item.input.matchType || 'Match'} · ${item.input.firstRuns} runs · ${item.summary.noResult ? 'No result' : `target ${item.summary.target}`} · ${new Date(item.savedAt).toLocaleString()}`;
+    const detail = document.createElement('small');
+    const capturer = item.input.capturerFirstName || item.input.capturerSurname ? `Captured by ${`${item.input.capturerFirstName || ''} ${item.input.capturerSurname || ''}`.trim()} · ` : 'Capturer name required · ';
+    const uploadLabel = item.uploadStatus === 'uploaded' ? 'Uploaded' : item.uploadStatus === 'error' ? 'Upload failed — retry pending' : 'Pending upload';
+    detail.textContent = `${capturer}${item.input.matchTypeLabel || item.input.matchType || 'Match'} · ${item.input.firstRuns} runs · ${item.summary.noResult ? 'No result' : `target ${item.summary.target}`} · ${uploadLabel} · ${new Date(item.savedAt).toLocaleString()}`;
     info.append(title, detail);
     const actions = document.createElement('div'); actions.className = 'saved-actions';
     const load = document.createElement('button'); load.className = 'button button-secondary'; load.type = 'button'; load.textContent = 'Load'; load.addEventListener('click', () => loadScenario(item.input));
@@ -754,9 +774,129 @@ function renderSaved() {
     actions.append(load, remove); row.append(info, actions); container.appendChild(row);
   }
 }
+const UPLOAD_CONFIG_KEY = 'dls60-umpire-upload-config-v1';
+function getUploadConfig() {
+  try { return JSON.parse(localStorage.getItem(UPLOAD_CONFIG_KEY) || '{}'); }
+  catch { return {}; }
+}
+function putUploadConfig(config) { localStorage.setItem(UPLOAD_CONFIG_KEY, JSON.stringify(config)); }
+function updateUploadSummary(message = '') {
+  const saved = getSaved();
+  const pending = saved.filter(item => item.uploadStatus !== 'uploaded').length;
+  const badge = $('uploadQueueBadge');
+  if (badge) badge.textContent = `${pending} pending`;
+  const status = $('uploadStatus');
+  if (!status) return;
+  if (message) status.textContent = message;
+  else if (!getUploadConfig().endpoint) status.textContent = 'Uploads are not configured. Matches can still be saved locally.';
+  else if (!pending) status.textContent = 'All saved matches have been uploaded.';
+  else if (!navigator.onLine) status.textContent = `${pending} match(es) waiting for an internet connection.`;
+  else status.textContent = `${pending} match(es) waiting to upload. Select Sync pending matches or wait for automatic sync.`;
+}
+function renderUploadSettings() {
+  const config = getUploadConfig();
+  $('uploadEndpoint').value = config.endpoint || '';
+  $('uploadAccessCode').value = config.accessCode || '';
+  updateUploadSummary();
+}
+function normaliseEndpoint(value) {
+  const url = new URL(value.trim());
+  if (url.protocol !== 'https:') throw new Error('The upload service must use an HTTPS address.');
+  return url.toString().replace(/\/$/, '');
+}
+async function saveAndTestUploadSettings() {
+  try {
+    const endpoint = normaliseEndpoint($('uploadEndpoint').value);
+    const accessCode = $('uploadAccessCode').value.trim();
+    if (!accessCode) throw new Error('Enter the union upload access code.');
+    $('saveUploadSettings').disabled = true;
+    updateUploadSummary('Checking the upload service…');
+    const response = await fetch(`${endpoint}/health`, { method: 'GET', cache: 'no-store' });
+    if (!response.ok) throw new Error(`Upload service check failed (HTTP ${response.status}).`);
+    const health = await response.json();
+    if (health.service !== 'dls-match-archive' || health.ready !== true) throw new Error('The address responded, but it does not look like the DLS match archive service.');
+    putUploadConfig({ endpoint, accessCode });
+    updateUploadSummary('Upload service connected. Pending matches will sync when online.');
+    await uploadPendingMatches({ automatic: true });
+  } catch (error) {
+    updateUploadSummary(error?.message || 'Could not test the upload service.');
+  } finally {
+    $('saveUploadSettings').disabled = false;
+  }
+}
+async function uploadOneMatch(item, config) {
+  const record = item.archiveRecord || archiveRecordFor(item);
+  const response = await fetch(`${config.endpoint}/upload`, {
+    method: 'POST',
+    mode: 'cors',
+    credentials: 'omit',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${config.accessCode}` },
+    body: JSON.stringify({ record })
+  });
+  let data = {};
+  try { data = await response.json(); } catch {}
+  if (!response.ok || data.ok !== true) throw new Error(data.message || `Upload failed (HTTP ${response.status}).`);
+  return data;
+}
+async function uploadPendingMatches({ automatic = false } = {}) {
+  if (uploadInProgress) return;
+  const config = getUploadConfig();
+  if (!config.endpoint || !config.accessCode) {
+    updateUploadSummary();
+    return;
+  }
+  if (!navigator.onLine) {
+    updateUploadSummary('Offline. Matches remain safely queued on this device.');
+    return;
+  }
+  uploadInProgress = true;
+  $('syncNow').disabled = true;
+  const saved = getSaved();
+  let uploaded = 0;
+  let failed = 0;
+  for (const item of saved) {
+    if (item.uploadStatus === 'uploaded') continue;
+    try {
+      const result = await uploadOneMatch(item, config);
+      item.uploadStatus = 'uploaded';
+      item.uploadedAt = result.uploadedAt || new Date().toISOString();
+      item.remotePath = result.path || '';
+      item.remoteUrl = result.html_url || '';
+      item.uploadError = '';
+      uploaded++;
+    } catch (error) {
+      item.uploadStatus = 'error';
+      item.uploadError = error?.message || 'Upload failed.';
+      failed++;
+    }
+    putSaved(saved);
+    renderSaved();
+    updateUploadSummary(`Uploading matches… ${uploaded} uploaded, ${failed} failed.`);
+  }
+  uploadInProgress = false;
+  $('syncNow').disabled = false;
+  const pending = getSaved().filter(item => item.uploadStatus !== 'uploaded').length;
+  if (!pending) updateUploadSummary(`Sync complete. ${uploaded} match(es) uploaded.`);
+  else updateUploadSummary(`Sync finished. ${uploaded} uploaded; ${failed} failed. ${pending} remain pending.`);
+  if (automatic && !uploaded && !failed) updateUploadSummary();
+}
+$('saveUploadSettings').addEventListener('click', saveAndTestUploadSettings);
+$('forgetUploadSettings').addEventListener('click', () => {
+  if (confirm('Forget the upload service address and access code on this device?')) {
+    localStorage.removeItem(UPLOAD_CONFIG_KEY);
+    $('uploadEndpoint').value = '';
+    $('uploadAccessCode').value = '';
+    updateUploadSummary('Upload settings removed. Saved matches remain on this device.');
+  }
+});
+$('syncNow').addEventListener('click', () => uploadPendingMatches());
+
 function inputFromUiRaw(input) {
   return {
     matchName: input.matchName || '',
+    capturerFirstName: input.capturerFirstName || '',
+    capturerSurname: input.capturerSurname || '',
+    capturedBy: input.capturedBy || `${input.capturerFirstName || ''} ${input.capturerSurname || ''}`.trim(),
     matchType: input.matchType || 'odi',
     matchTypeLabel: input.matchTypeLabel || '',
     minOversPerSide: input.minOversPerSide ?? 20,
@@ -778,6 +918,8 @@ function loadScenario(input) {
   previousMatchType = $('matchType').value;
   applyMatchType(matchType, { presetOvers: false, preserveOtherMinimum: true });
   $('matchName').value = input.matchName || '';
+  $('capturerFirstName').value = input.capturerFirstName || '';
+  $('capturerSurname').value = input.capturerSurname || '';
   $('firstOvers').value = input.firstOvers;
   $('firstRuns').value = input.firstRuns;
   $('minOversPerSide').value = input.minOversPerSide ?? (MATCH_TYPES[matchType]?.minOvers ?? '');
@@ -793,14 +935,55 @@ function loadScenario(input) {
   suspendAutoCalculation = false;
   validationStarted = true;
   calculateAndDisplay({ scroll: true });
-}$('saveScenario').addEventListener('click', () => {
+}function currentReportDetails() {
+  return {
+    finalRuns: $('secondFinalRuns').value.trim() === '' ? null : Number($('secondFinalRuns').value),
+    finalWickets: $('secondFinalWickets').value.trim() === '' ? null : Number($('secondFinalWickets').value),
+    finalOvers: $('secondFinalOvers').value.trim() || null,
+    competition: $('reportCompetition').value.trim(),
+    firstTeam: $('reportFirstTeam').value.trim(),
+    secondTeam: $('reportSecondTeam').value.trim(),
+    venue: $('reportVenue').value.trim(),
+    matchDate: $('reportDate').value || null,
+    reportReady: getReportReadiness().eligible,
+    reportOutcomeCode: getReportReadiness().code || null
+  };
+}
+function archiveRecordFor(item) {
+  return createMatchArchiveRecord({
+    id: item.id,
+    savedAt: item.savedAt,
+    input: item.input,
+    summary: item.summary,
+    reportDetails: item.reportDetails || null,
+    parScoreTables: item.parScoreTables || null
+  });
+}
+
+$('saveScenario').addEventListener('click', () => {
   try {
     const doc = scenarioDocument();
+    if (!doc.input.capturerFirstName?.trim() || !doc.input.capturerSurname?.trim()) {
+      throw new Error('Enter the match capturer’s first name and surname before saving.');
+    }
     const saved = getSaved();
-    saved.unshift({ id: crypto.randomUUID?.() || `${Date.now()}-${Math.random()}`, savedAt: new Date().toISOString(), input: inputFromUiRaw(doc.input), summary: doc.resultSummary });
+    const id = crypto.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+    const item = {
+      id,
+      savedAt: new Date().toISOString(),
+      input: inputFromUiRaw(doc.input),
+      summary: doc.resultSummary,
+      reportDetails: currentReportDetails(),
+      parScoreTables: { overByOver: currentResult.overRows, ballByBall: currentResult.ballRows },
+      uploadStatus: 'pending'
+    };
+    item.archiveRecord = archiveRecordFor(item);
+    saved.unshift(item);
     putSaved(saved.slice(0, 50));
     renderSaved();
-    $('saveMessage').textContent = 'Match saved on this device.';
+    $('saveMessage').textContent = 'Match saved on this device and added to the upload queue.';
+    updateUploadSummary();
+    if (navigator.onLine && getUploadConfig().endpoint) uploadPendingMatches({ automatic: true });
   } catch (error) { $('saveMessage').textContent = error.message; }
 });
 $('clearSaved').addEventListener('click', () => {
@@ -820,8 +1003,10 @@ $('importScenario').addEventListener('change', async (event) => {
 });
 
 renderSaved();
+renderUploadSettings();
 updateEmptyMessages();
 if ($('reportDate')) $('reportDate').value = new Date().toLocaleDateString('en-CA');
 clearControlErrors();
 updateReportAvailability();
-$('autoCalcStatus').textContent = 'Select a match type and enter the match details. Calculations update automatically.';
+$('autoCalcStatus').textContent = 'Select a match type, enter the capturer’s first name and surname, and enter the match details. Calculations update automatically.';
+if (navigator.onLine) setTimeout(() => uploadPendingMatches({ automatic: true }), 900);

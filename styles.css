@@ -66,3 +66,21 @@
 .field.is-invalid>span,.event-field.is-invalid>span{color:var(--red)!important}
 .field input:disabled{background:#f1f4f8;color:#8995a6;cursor:not-allowed}
 .auto-calc-status{margin:2px 0 4px;color:#53677f;font-size:12px;line-height:1.45}
+
+/* v0.5.0: match-capturer identity and private match archive sync */
+.capturer-grid{grid-template-columns:1fr 1fr;margin-top:14px;max-width:760px}
+.required-mark{color:var(--red);font-size:12px}
+.capturer-note{font-size:11px;color:#718097;margin:7px 0 0}
+.upload-box{margin-top:18px;padding:15px;border:1px solid #dce5f0;background:#f8fafd;border-radius:12px}
+.upload-box-heading,.upload-actions,.upload-config-actions{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.upload-box-heading strong{font-size:13px;color:#2c405d}
+.upload-box-heading .panel-hint{margin-top:3px}
+.upload-settings{margin-top:12px;border-top:1px solid #e0e7f0;padding-top:11px}
+.upload-settings summary{cursor:pointer;font-size:12px;font-weight:750;color:#31547d}
+.upload-settings-grid{margin-top:12px}
+.upload-settings-grid .field input{min-width:0}
+.upload-config-actions{justify-content:flex-start;margin-top:12px}
+.upload-actions{margin-top:13px;padding-top:11px;border-top:1px solid #e0e7f0}
+.upload-status{font-size:11px;color:#63748b;margin:0;line-height:1.45}
+#syncNow:disabled{opacity:.55;cursor:wait}
+@media(max-width:650px){.capturer-grid{grid-template-columns:1fr}.upload-box-heading,.upload-actions{align-items:stretch;flex-direction:column}.upload-config-actions{align-items:stretch;flex-direction:column}.upload-config-actions .button,.upload-actions .button{width:100%}}

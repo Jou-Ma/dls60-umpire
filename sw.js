@@ -1,7 +1,7 @@
-const CACHE_NAME = 'dls60-umpire-shell-v8';
+const CACHE_NAME = 'dls60-umpire-shell-v9';
 const APP_SHELL = [
   './', './index.html', './styles.css', './app.js', './engine.js',
-  './manifest.webmanifest', './report.js', './icon.svg', './icon-192.png', './icon-512.png'
+  './manifest.webmanifest', './report.js', './match-record.js', './icon.svg', './icon-192.png', './icon-512.png'
 ];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(APP_SHELL)).then(() => self.skipWaiting()));
