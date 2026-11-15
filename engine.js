@@ -187,6 +187,9 @@ function resourceRun(overs, lambda, wickets) {
 }
 
 function eventSegment(overs, lambda, wickets) {
+  // A zero-over resource segment contributes zero resources. Without this
+  // guard Gfun(0, ...) evaluates a 0/0 ratio and contaminates lambda/adjustment.
+  if (overs <= 0) return 0;
   return MODEL.g50 / (1 - Math.exp(-50 * MODEL.bb))
     * Gfun(overs, lambda, wickets)
     * WICKETS.Fw[wickets] * Math.pow(lambda, WICKETS.nw[wickets] + 1)
