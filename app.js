@@ -313,7 +313,7 @@ function renderTable(type) {
     const values = [row.oversBowled, row.oversRemaining, ...row.par];
     for (const value of values) {
       const td = document.createElement('td');
-      td.textContent = String(value);
+      td.textContent = value == null ? '--' : String(value);
       tr.appendChild(td);
     }
     fragment.appendChild(tr);
@@ -381,7 +381,7 @@ function safeFilename(value) {
 }
 function scenarioDocument() {
   if (!currentInput || !currentResult) throw new Error('Calculate a match first.');
-  return { app: 'DLS 6.0 Umpire Calculator', appVersion: '0.3.1', exportedAt: new Date().toISOString(), input: currentInput, resultSummary: { target: currentResult.target, lambda: currentResult.lambda, adjustmentFactor: currentResult.adjustmentFactor, noResult: currentResult.noResult } };
+  return { app: 'DLS 6.0 Umpire Calculator', appVersion: '0.3.2', exportedAt: new Date().toISOString(), input: currentInput, resultSummary: { target: currentResult.target, lambda: currentResult.lambda, adjustmentFactor: currentResult.adjustmentFactor, noResult: currentResult.noResult } };
 }
 function updateReportAvailability() {
   const button = $('createMatchReport');

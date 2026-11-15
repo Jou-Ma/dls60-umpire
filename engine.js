@@ -349,26 +349,59 @@ export function calculateMatch(input) {
     ? `${minimumFailedSides.join('; ')}; the minimum is ${minOversPerSide} overs per side.`
     : null;
 
-  // Match the DLS 6.0 table-generation sequence: iterate the original
-  // second-innings allocation, but only show positions whose remaining overs
-  // are within the final allocation after all second-innings interruptions.
-  // This means the first displayed row starts after the cumulative overs lost.
-  const tableInitialBalls = oversToBalls(secondOvers);
+  // Match the original DLS 6.0 second-innings par-table sequence.
+  // The table is generated from the final total overs available (after all
+  // second-innings losses) and starts at the latest second-innings stoppage.
+  // In the original JAR: olft2 = total overs available - overs bowled at the
+  // latest stoppage. The displayed rows then run from that stoppage to the
+  // revised innings limit.
+  const latestStoppageBalls = secondEvents.length
+    ? oversToBalls(secondEvents[secondEvents.length - 1].oversBowled)
+    : 0;
+  const remainingAtLatestStoppageBalls = finalSecondBalls - latestStoppageBalls;
+  const latestStoppageWickets = secondEvents.length
+    ? secondEvents[secondEvents.length - 1].wickets
+    : 0;
+  const makeParCells = (remainingBalls) => {
+    const remaining = remainingBalls / 6;
+    return Array.from({ length: 10 }, (_, wickets) =>
+      wickets < latestStoppageWickets
+        ? '--'
+        : parScore(remaining, wickets, target, firstRuns, lambda, adj)
+    );
+  };
+
   const overRows = [];
-  for (let ballsBowled = 0; ballsBowled <= tableInitialBalls; ballsBowled += 6) {
-    const remainingBalls = tableInitialBalls - ballsBowled;
-    if (remainingBalls > finalSecondBalls) continue;
-    const remaining = remainingBalls / 6;
-    const cells = Array.from({ length: 10 }, (_, wickets) => parScore(remaining, wickets, target, firstRuns, lambda, adj));
-    overRows.push({ ballsBowled, oversBowled: ballsToOvers(ballsBowled), oversRemaining: ballsToOvers(remainingBalls), par: cells });
+  if (remainingAtLatestStoppageBalls >= 0) {
+    // The JAR's over table iterates whole-over remaining values. If a stoppage
+    // occurs part-way through an over, the first over-table row is the next
+    // whole-over position.
+    const maxWholeOversRemaining = Math.floor(remainingAtLatestStoppageBalls / 6);
+    for (let wholeOversRemaining = maxWholeOversRemaining; wholeOversRemaining >= 0; wholeOversRemaining--) {
+      const remainingBalls = wholeOversRemaining * 6;
+      const ballsBowled = finalSecondBalls - remainingBalls;
+      overRows.push({
+        ballsBowled,
+        oversBowled: ballsToOvers(ballsBowled),
+        oversRemaining: ballsToOvers(remainingBalls),
+        par: makeParCells(remainingBalls)
+      });
+    }
   }
+
   const ballRows = [];
-  for (let ballsBowled = 0; ballsBowled <= tableInitialBalls; ballsBowled++) {
-    const remainingBalls = tableInitialBalls - ballsBowled;
-    if (remainingBalls > finalSecondBalls) continue;
-    const remaining = remainingBalls / 6;
-    const cells = Array.from({ length: 10 }, (_, wickets) => parScore(remaining, wickets, target, firstRuns, lambda, adj));
-    ballRows.push({ ballsBowled, oversBowled: ballsToOvers(ballsBowled), oversRemaining: ballsToOvers(remainingBalls), par: cells });
+  if (remainingAtLatestStoppageBalls >= 0) {
+    // The ball-by-ball table starts at the exact ball position of the latest
+    // stoppage and then includes each remaining ball through the revised limit.
+    for (let remainingBalls = remainingAtLatestStoppageBalls; remainingBalls >= 0; remainingBalls--) {
+      const ballsBowled = finalSecondBalls - remainingBalls;
+      ballRows.push({
+        ballsBowled,
+        oversBowled: ballsToOvers(ballsBowled),
+        oversRemaining: ballsToOvers(remainingBalls),
+        par: makeParCells(remainingBalls)
+      });
+    }
   }
 
   return {
