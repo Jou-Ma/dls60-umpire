@@ -505,6 +505,8 @@ function displayResult(input, result, { scroll = true, resetReport = false } = {
     $('secondFinalOvers').value = '';
   }
   updateReportAvailability();
+  $('lambdaValue').textContent = result.lambda.toFixed(4);
+  $('adjustmentValue').textContent = result.adjustmentFactor.toFixed(9);
   $('revisedOvers').textContent = result.finalSecondOvers;
   $('resourceSummary').replaceChildren();
   const chips = [
@@ -694,7 +696,7 @@ function createReportHtml() {
   const dateValue = $('reportDate').value;
   const matchDate = dateValue ? new Date(`${dateValue}T12:00:00`).toLocaleDateString('en-ZA', { day:'2-digit', month:'short', year:'numeric' }) : new Date().toLocaleDateString('en-ZA', { day:'2-digit', month:'short', year:'numeric' });
   const capturedBy = `${$('reportCapturerFirstName').value.trim() || 'Name'} ${$('reportCapturerSurname').value.trim() || 'Surname'}`;
-  const resultText = describeReportOutcome({ result: currentResult, finalRuns, wicketsLost, chasingTeam: team2 });
+  const resultText = describeReportOutcome({ result: currentResult, finalRuns, wicketsLost, chasingTeam: team2, defendingTeam: team1 });
   const matchTitle = currentInput.matchName || `${team1} vs ${team2}`;
   const firstTable = reportEventRows(currentInput.firstEvents);
   const secondTable = reportEventRows(currentInput.secondEvents);
