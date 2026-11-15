@@ -79,17 +79,24 @@ export function evaluateReportReadiness({
 }
 
 /** Build neutral, outcome-aware wording for the printable report. */
-export function describeReportOutcome({ result, finalRuns, wicketsLost = null, chasingTeam = 'Team batting second' }) {
-  const score = `${finalRuns}${wicketsLost == null ? '' : `/${wicketsLost}`}`;
+export function describeReportOutcome({ result, finalRuns, wicketsLost = null, chasingTeam = 'Team B', defendingTeam = 'Team A' }) {
   if (result.noResult) {
-    return `NO RESULT — ${result.noResultReason || 'minimum overs requirement not met'}. ${chasingTeam} recorded ${score} against the revised DLS target of ${result.target}.`;
+    const score = `${finalRuns}${wicketsLost == null ? '' : `/${wicketsLost}`}`;
+    return `DLS Target: ${result.target} · ${chasingTeam} Final Score: ${score} · No Result.`;
   }
+
   if (finalRuns >= result.target) {
-    const wicketMargin = wicketsLost != null && wicketsLost < 10
-      ? ` Won by ${10 - wicketsLost} wicket${10 - wicketsLost === 1 ? '' : 's'}.`
-      : '';
-    return `${chasingTeam} achieved the revised target of ${result.target} with ${finalRuns} runs.${wicketMargin}`;
+    if (wicketsLost != null && wicketsLost < 10) {
+      const wicketsRemaining = 10 - wicketsLost;
+      return `DLS Target: ${result.target} · ${chasingTeam} Final Score: ${finalRuns}/${wicketsLost} · ${chasingTeam} won by ${wicketsRemaining} wicket${wicketsRemaining === 1 ? '' : 's'}.`;
+    }
+    return `DLS Target: ${result.target} · ${chasingTeam} Final Score: ${finalRuns}${wicketsLost == null ? '' : `/${wicketsLost}`} · ${chasingTeam} won.`;
   }
-  const shortfall = result.target - finalRuns;
-  return `${chasingTeam} did not achieve the revised DLS target of ${result.target}. Final score: ${score} — ${shortfall} run${shortfall === 1 ? '' : 's'} below the target.`;
+
+  if (finalRuns === result.target - 1) {
+    return `DLS Target: ${result.target} · ${chasingTeam} Final Score: ${finalRuns}${wicketsLost == null ? '' : `/${wicketsLost}`} · Match tied.`;
+  }
+
+  const runsMargin = result.target - finalRuns - 1;
+  return `DLS Target: ${result.target} · ${chasingTeam} Final Score: ${finalRuns}${wicketsLost == null ? '' : `/${wicketsLost}`} · ${defendingTeam} won by ${runsMargin} run${runsMargin === 1 ? '' : 's'}.`;
 }
