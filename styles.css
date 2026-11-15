@@ -58,3 +58,11 @@
 .tag{background:#f5f7fa}
 @media(max-width:850px){.report-actions{align-items:stretch;flex-direction:column}.report-actions .button{width:100%}}
 @media(max-width:560px){.report-score-grid,.report-meta-grid{grid-template-columns:1fr 1fr}.report-score-grid .field:first-child,.report-meta-grid .field:first-child{grid-column:span 2}.report-actions{gap:9px}}
+
+/* v0.4.0: immediate, field-level validation and auto-calculation status */
+.field-error{display:none!important;color:var(--red)!important;font-size:10px!important;font-weight:650!important;line-height:1.35;margin-top:-2px}
+.field.is-invalid .field-error,.event-field.is-invalid .field-error{display:block!important}
+.field.is-invalid input,.field.is-invalid select,.event-field.is-invalid input{border-color:var(--red)!important;background:#fff7f6!important;box-shadow:0 0 0 3px #b4231812!important}
+.field.is-invalid>span,.event-field.is-invalid>span{color:var(--red)!important}
+.field input:disabled{background:#f1f4f8;color:#8995a6;cursor:not-allowed}
+.auto-calc-status{margin:2px 0 4px;color:#53677f;font-size:12px;line-height:1.45}

@@ -1,11 +1,14 @@
 import { calculateMatch, parseOvers, prepareEvents, ballsToOvers, oversToBalls, deriveSecondOvers } from './engine.js';
+import { evaluateReportReadiness, describeReportOutcome } from './report.js';
 
 const $ = (id) => document.getElementById(id);
 let currentResult = null;
 let currentInput = null;
 let activeTable = 'overs';
 let deferredInstallPrompt = null;
-let previousMatchType = $('matchType').value;
+let previousMatchType = $('matchType').value || '';
+let validationStarted = false;
+let suspendAutoCalculation = false;
 
 const MATCH_TYPES = {
   odi: { overs: 50, minOvers: 20, label: 'ODI regulations (50 overs/innings)' },
@@ -52,10 +55,10 @@ function addEventRow(containerId, row = {}) {
   const wrapper = document.createElement('div');
   wrapper.className = 'event-row';
   wrapper.innerHTML = `
-    <label class="event-field"><span>Overs bowled at stoppage</span><input type="text" class="event-overs" inputmode="decimal" placeholder="e.g. 17.3" aria-label="Overs bowled at stoppage"></label>
-    <label class="event-field"><span>Runs at stoppage</span><input type="number" class="event-score" min="0" max="999" step="1" placeholder="e.g. 125" aria-label="Runs at stoppage"></label>
-    <label class="event-field"><span>Wickets down</span><input type="number" class="event-wickets" min="0" max="10" step="1" placeholder="e.g. 3" aria-label="Wickets down at stoppage" value="0"></label>
-    <label class="event-field"><span>Overs lost</span><input type="text" class="event-loss" inputmode="decimal" placeholder="e.g. 4.0 or A" aria-label="Overs lost at interruption"><small>Use A for all remaining overs.</small></label>
+    <label class="event-field"><span>Overs bowled at stoppage</span><input type="text" class="event-overs" inputmode="decimal" placeholder="e.g. 17.3" aria-label="Overs bowled at stoppage"><small class="field-error" aria-live="polite"></small></label>
+    <label class="event-field"><span>Runs at stoppage <small>optional</small></span><input type="number" class="event-score" min="0" max="999" step="1" placeholder="e.g. 125" aria-label="Runs at stoppage"><small class="field-error" aria-live="polite"></small></label>
+    <label class="event-field"><span>Wickets down</span><input type="number" class="event-wickets" min="0" max="10" step="1" placeholder="e.g. 3" aria-label="Wickets down at stoppage" value="0"><small class="field-error" aria-live="polite"></small></label>
+    <label class="event-field"><span>Overs lost</span><input type="text" class="event-loss" inputmode="decimal" placeholder="e.g. 4.0 or A" aria-label="Overs lost at interruption"><small>Use A for all remaining overs.</small><small class="field-error" aria-live="polite"></small></label>
     <button class="remove-event" type="button" aria-label="Remove interruption">×</button>`;
   wrapper.querySelector('.event-overs').value = row.oversBowled ?? '';
   wrapper.querySelector('.event-score').value = row.scoreAtEvent ?? '';
@@ -65,15 +68,20 @@ function addEventRow(containerId, row = {}) {
     wrapper.remove();
     updateEmptyMessages();
     if (containerId === 'firstEvents') syncSecondOversFromFirst();
+    handleCoreInputChange();
   });
-  if (containerId === 'firstEvents') {
-    wrapper.querySelectorAll('input').forEach(input => input.addEventListener('input', syncSecondOversFromFirst));
-  }
+  wrapper.querySelectorAll('input').forEach(input => input.addEventListener('input', () => {
+    if (containerId === 'firstEvents') syncSecondOversFromFirst();
+    handleCoreInputChange();
+  }));
   container.appendChild(wrapper);
   updateEmptyMessages();
   if (containerId === 'firstEvents') syncSecondOversFromFirst();
+  if (!suspendAutoCalculation) {
+    validationStarted = true;
+    handleCoreInputChange();
+  }
 }
-
 function updateEmptyMessages() {
   $('firstEmpty').style.display = $('firstEvents').children.length ? 'none' : 'block';
   $('secondEmpty').style.display = $('secondEvents').children.length ? 'none' : 'block';
@@ -123,9 +131,18 @@ function firstInningsAllocationPreview() {
 }
 
 function syncSecondOversFromFirst() {
+  const matchTypeSelected = !!$('matchType').value;
   const automatic = $('autoSecondOvers').checked;
+  $('firstOvers').disabled = !matchTypeSelected;
+  $('secondOvers').disabled = !matchTypeSelected;
+  $('minOversPerSide').disabled = !matchTypeSelected;
   $('secondOvers').readOnly = automatic;
   $('secondOversModeLabel').textContent = automatic ? 'automatic' : 'manual override';
+  if (!matchTypeSelected) {
+    $('secondOvers').value = '';
+    $('secondOversHelp').textContent = 'Select a match type to allocate the chasing overs.';
+    return;
+  }
   if (!automatic) {
     $('secondOversHelp').textContent = 'Manual override is on. Enter the scheduled overs allocated to the chasing side in cricket notation.';
     return;
@@ -142,22 +159,47 @@ function syncSecondOversFromFirst() {
     ? `${scheduled}.0 overs − ${totalLost} overs lost = ${preview.remainingOvers} overs automatically allocated to the chasing side.`
     : `No first-innings overs lost: the chasing side is allocated ${preview.remainingOvers} overs.`;
 }
-
-$('autoSecondOvers').addEventListener('change', syncSecondOversFromFirst);
-$('firstOvers').addEventListener('input', syncSecondOversFromFirst);
+$('autoSecondOvers').addEventListener('change', () => {
+  syncSecondOversFromFirst();
+  handleCoreInputChange();
+});
+$('firstOvers').addEventListener('input', () => {
+  syncSecondOversFromFirst();
+  handleCoreInputChange();
+});
+$('firstRuns').addEventListener('input', handleCoreInputChange);
+$('secondOvers').addEventListener('input', handleCoreInputChange);
+$('minOversPerSide').addEventListener('input', handleCoreInputChange);
+$('penaltyRuns').addEventListener('input', handleCoreInputChange);
+$('matchName').addEventListener('input', handleCoreInputChange);
 
 function applyMatchType(type, { presetOvers = true, preserveOtherMinimum = false } = {}) {
   const preset = MATCH_TYPES[type];
   const isFixedMinimum = type === 'odi' || type === 't20';
   const isOther = type.startsWith('other-') || type === 'custom';
+  const selected = !!type;
 
+  $('firstOvers').disabled = !selected;
+  $('secondOvers').disabled = !selected;
+  $('minOversPerSide').disabled = !selected;
   $('minOversPerSide').readOnly = isFixedMinimum;
   $('minimumOversModeLabel').textContent = isFixedMinimum ? 'fixed by match type' : 'editable playing condition';
-  if (preset) {
+
+  if (!selected) {
+    $('firstOvers').value = '';
+    $('minOversPerSide').value = '';
+    $('secondOvers').value = '';
+    $('minimumOversHelp').textContent = 'ODI defaults to 20; T20 defaults to 5.';
+  } else if (preset) {
     if (presetOvers) $('firstOvers').value = String(preset.overs);
     if (!preserveOtherMinimum || isFixedMinimum) $('minOversPerSide').value = String(preset.minOvers);
   } else if (type === 'custom') {
-    if (presetOvers || !$('minOversPerSide').value || Number($('minOversPerSide').value) < 1) $('minOversPerSide').value = '10';
+    if (presetOvers) {
+      $('firstOvers').value = '';
+      $('minOversPerSide').value = '';
+    } else if (!preserveOtherMinimum && (!$('minOversPerSide').value || Number($('minOversPerSide').value) < 1)) {
+      $('minOversPerSide').value = '';
+    }
   }
 
   if (isFixedMinimum) {
@@ -184,10 +226,9 @@ $('matchType').addEventListener('change', () => {
   }
   previousMatchType = nextType;
   applyMatchType(nextType);
-  clearOutput();
+  validationStarted = true;
+  handleCoreInputChange();
 });
-$('minOversPerSide').addEventListener('input', clearOutput);
-
 function currentMatchTypeLabel() {
   const type = $('matchType').value;
   const min = Number($('minOversPerSide').value);
@@ -198,7 +239,182 @@ function currentMatchTypeLabel() {
   return $('matchType').selectedOptions[0]?.textContent || 'Custom match type';
 }
 
+function setControlError(control, message) {
+  const label = control.closest('.field, .event-field');
+  if (!label) return;
+  label.classList.toggle('is-invalid', !!message);
+  control.setAttribute('aria-invalid', message ? 'true' : 'false');
+  const messageNode = label.querySelector('.field-error');
+  if (messageNode) messageNode.textContent = message || '';
+}
+
+function clearControlErrors() {
+  document.querySelectorAll('#matchForm .field, #matchForm .event-field').forEach(label => {
+    label.classList.remove('is-invalid');
+    const control = label.querySelector('input, select');
+    if (control) control.setAttribute('aria-invalid', 'false');
+    const messageNode = label.querySelector('.field-error');
+    if (messageNode) messageNode.textContent = '';
+  });
+}
+
+function validateEventRows(containerId, scheduledOvers, label, firstRuns = null) {
+  const errors = [];
+  const wrappers = [...$(containerId).querySelectorAll('.event-row')];
+  if (!wrappers.length || !Number.isFinite(scheduledOvers) || scheduledOvers <= 0) return errors;
+
+  const scheduledBalls = oversToBalls(scheduledOvers);
+  let previousOverBalls = -1;
+  let previousLossBalls = 0;
+  let previousWickets = 0;
+  let previousScore = 0;
+
+  wrappers.forEach((wrapper, index) => {
+    const rowNo = index + 1;
+    const oversControl = wrapper.querySelector('.event-overs');
+    const scoreControl = wrapper.querySelector('.event-score');
+    const wicketsControl = wrapper.querySelector('.event-wickets');
+    const lossControl = wrapper.querySelector('.event-loss');
+    let rowOverBalls = null;
+    let rowLossBalls = null;
+    let rowWickets = null;
+    let rowScore = null;
+
+    const oversText = oversControl.value.trim();
+    if (!oversText) {
+      errors.push({ control: oversControl, message: `${label} interruption ${rowNo}: overs bowled is required.` });
+    } else {
+      try {
+        rowOverBalls = oversToBalls(parseOvers(oversText, 'Overs bowled'));
+        if (rowOverBalls > scheduledBalls) throw new Error('cannot exceed the scheduled innings length');
+        if (rowOverBalls < previousOverBalls) throw new Error('must be in chronological order');
+        previousOverBalls = rowOverBalls;
+      } catch (error) {
+        errors.push({ control: oversControl, message: `${label} interruption ${rowNo}: ${error.message}` });
+        rowOverBalls = null;
+      }
+    }
+
+    const wicketsText = wicketsControl.value.trim();
+    if (wicketsText === '') {
+      errors.push({ control: wicketsControl, message: `${label} interruption ${rowNo}: wickets down is required (enter 0 if none).` });
+    } else {
+      rowWickets = Number(wicketsText);
+      if (!Number.isInteger(rowWickets) || rowWickets < previousWickets || rowWickets > 10) {
+        errors.push({ control: wicketsControl, message: `${label} interruption ${rowNo}: enter a whole number from ${previousWickets} to 10; wickets cannot decrease.` });
+        rowWickets = null;
+      } else {
+        previousWickets = rowWickets;
+      }
+    }
+
+    const scoreText = scoreControl.value.trim();
+    if (scoreText !== '') {
+      rowScore = Number(scoreText);
+      if (!Number.isInteger(rowScore) || rowScore < previousScore || rowScore < 0 || rowScore > 999) {
+        errors.push({ control: scoreControl, message: `${label} interruption ${rowNo}: runs must be a whole number from ${previousScore} to 999.` });
+        rowScore = null;
+      } else if (firstRuns != null && rowScore > firstRuns) {
+        errors.push({ control: scoreControl, message: `${label} interruption ${rowNo}: runs at stoppage cannot exceed the final first-innings total (${firstRuns}).` });
+        rowScore = null;
+      } else {
+        previousScore = rowScore;
+      }
+    }
+
+    const lossText = lossControl.value.trim();
+    if (!lossText) {
+      errors.push({ control: lossControl, message: `${label} interruption ${rowNo}: overs lost is required.` });
+    } else if (rowOverBalls != null) {
+      const availableBalls = scheduledBalls - rowOverBalls - previousLossBalls;
+      try {
+        if (/^a$/i.test(lossText)) {
+          rowLossBalls = Math.max(0, availableBalls);
+        } else {
+          rowLossBalls = oversToBalls(parseOvers(lossText, 'Overs lost'));
+        }
+        if (rowLossBalls < 0 || rowLossBalls > availableBalls) {
+          throw new Error('cannot exceed the overs still available at this stoppage');
+        }
+        previousLossBalls += rowLossBalls;
+      } catch (error) {
+        errors.push({ control: lossControl, message: `${label} interruption ${rowNo}: ${error.message}` });
+        rowLossBalls = null;
+      }
+    }
+  });
+
+  return errors;
+}
+
+function validateFormControls() {
+  const errors = [];
+  const add = (id, message) => errors.push({ control: $(id), message });
+  const type = $('matchType').value;
+  const hasType = !!type;
+  if (!hasType) add('matchType', 'Select a match type before calculating.');
+
+  let firstOvers = null;
+  if (hasType) {
+    const text = $('firstOvers').value.trim();
+    const value = text === '' ? NaN : Number(text);
+    if (!Number.isInteger(value) || value < 1 || value > 100) add('firstOvers', 'Enter scheduled overs as a whole number from 1 to 100.');
+    else firstOvers = value;
+  }
+
+  const runsText = $('firstRuns').value.trim();
+  const firstRuns = runsText === '' ? NaN : Number(runsText);
+  if (!Number.isInteger(firstRuns) || firstRuns < 0 || firstRuns > 999) {
+    add('firstRuns', 'Enter the first-innings total as a whole number from 0 to 999.');
+  }
+
+  if (hasType) {
+    const minimumText = $('minOversPerSide').value.trim();
+    const minimum = minimumText === '' ? NaN : Number(minimumText);
+    if (!Number.isInteger(minimum) || minimum < 1 || minimum > 99) {
+      add('minOversPerSide', 'Enter a minimum of 1 to 99 whole overs per side.');
+    } else if (firstOvers != null && minimum > firstOvers) {
+      add('minOversPerSide', 'Minimum overs cannot exceed the scheduled first-innings overs.');
+    }
+  }
+
+  const penaltyText = $('penaltyRuns').value.trim();
+  if (penaltyText !== '') {
+    const penalty = Number(penaltyText);
+    if (!Number.isInteger(penalty) || penalty < 0 || penalty > 999) {
+      add('penaltyRuns', 'Penalty runs must be a whole number from 0 to 999.');
+    }
+  }
+
+  let secondOvers = null;
+  if (hasType) {
+    const secondText = $('secondOvers').value.trim();
+    try {
+      if (!secondText) throw new Error('Second-innings scheduled overs are required.');
+      secondOvers = parseOvers(secondText, 'Second-innings scheduled overs');
+      if (!(secondOvers > 0 && secondOvers <= 100)) throw new Error('Must be greater than 0 and no more than 100 overs.');
+    } catch (error) {
+      add('secondOvers', error.message);
+      secondOvers = null;
+    }
+  }
+
+  if (firstOvers != null) {
+    errors.push(...validateEventRows('firstEvents', firstOvers, 'First innings', Number.isFinite(firstRuns) ? firstRuns : null));
+  }
+  if (secondOvers != null) {
+    errors.push(...validateEventRows('secondEvents', secondOvers, 'Second innings'));
+  }
+  return errors;
+}
+
+function applyValidationErrors(errors) {
+  clearControlErrors();
+  errors.forEach(({ control, message }) => setControlError(control, message));
+}
+
 function collectInput() {
+  if (!$('matchType').value) throw new Error('Select a match type before calculating.');
   const firstOvers = Number($('firstOvers').value);
   const firstRuns = Number($('firstRuns').value);
   const firstRows = readEventRows('firstEvents');
@@ -208,19 +424,7 @@ function collectInput() {
   if (autoSecondOvers) syncSecondOversFromFirst();
   const secondOvers = parseOvers($('secondOvers').value, 'Second-innings scheduled overs');
   const secondEvents = prepareEvents(secondRows, secondOvers, 'Second innings');
-  if (!Number.isInteger(firstRuns) || firstRuns < 0) throw new Error('First-innings total runs must be a whole number of 0 or more.');
-  for (let i = 0; i < firstEvents.length; i++) {
-    if (firstEvents[i].scoreAtEvent != null && firstEvents[i].scoreAtEvent > firstRuns) {
-      throw new Error(`First-innings interruption ${i + 1}: score at stoppage cannot exceed the final innings total.`);
-    }
-  }
   const minOversPerSide = Number($('minOversPerSide').value);
-  if (!Number.isInteger(minOversPerSide) || minOversPerSide < 1 || minOversPerSide > 99) {
-    throw new Error('Minimum overs per side must be a whole number between 1 and 99.');
-  }
-  if (minOversPerSide > firstOvers) {
-    throw new Error('Minimum overs per side cannot exceed the scheduled first-innings overs.');
-  }
   return {
     matchName: $('matchName').value.trim(),
     matchType: $('matchType').value,
@@ -239,12 +443,42 @@ function collectInput() {
   };
 }
 
+function calculateAndDisplay({ scroll = false } = {}) {
+  syncSecondOversFromFirst();
+  const errors = validateFormControls();
+  applyValidationErrors(errors);
+  if (errors.length) {
+    clearOutput();
+    const firstError = errors[0].message;
+    $('formError').textContent = validationStarted ? `Please correct the highlighted fields. ${firstError}` : firstError;
+    $('autoCalcStatus').textContent = 'Complete the highlighted fields. DLS will calculate automatically when the inputs are valid.';
+    return false;
+  }
+  try {
+    const input = collectInput();
+    const result = calculateMatch(input);
+    displayResult(input, result, { scroll, resetReport: false });
+    $('formError').textContent = '';
+    $('autoCalcStatus').textContent = 'DLS updated automatically from the current match details.';
+    return true;
+  } catch (error) {
+    clearOutput();
+    $('formError').textContent = error?.message || 'Could not calculate this scenario.';
+    $('autoCalcStatus').textContent = 'Check the highlighted or reported input before continuing.';
+    return false;
+  }
+}
+
+function handleCoreInputChange() {
+  if (suspendAutoCalculation || !validationStarted) return;
+  calculateAndDisplay({ scroll: false });
+}
 function prettyOvers(decimal) {
   const balls = Math.max(0, Math.round(decimal * 6));
   return ballsToOvers(balls);
 }
 
-function displayResult(input, result) {
+function displayResult(input, result, { scroll = true, resetReport = false } = {}) {
   currentInput = input;
   currentResult = result;
   $('results').classList.remove('hidden');
@@ -258,9 +492,11 @@ function displayResult(input, result) {
   if (result.noResult) {
     outcome.textContent = `NO RESULT: ${result.noResultReason}`;
   }
-  $('secondFinalRuns').value = '';
-  $('secondFinalWickets').value = '';
-  $('secondFinalOvers').value = '';
+  if (resetReport) {
+    $('secondFinalRuns').value = '';
+    $('secondFinalWickets').value = '';
+    $('secondFinalOvers').value = '';
+  }
   updateReportAvailability();
   $('lambdaValue').textContent = result.lambda.toFixed(4);
   $('adjustmentValue').textContent = result.adjustmentFactor.toFixed(9);
@@ -281,7 +517,7 @@ function displayResult(input, result) {
     $('resourceSummary').appendChild(chip);
   }
   renderTable(activeTable);
-  $('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  if (scroll) $('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function renderTable(type) {
@@ -293,7 +529,7 @@ function renderTable(type) {
     tab.setAttribute('aria-selected', String(active));
   });
   const rows = type === 'overs' ? currentResult.overRows : currentResult.ballRows;
-  $('tableMeta').textContent = `${rows.length} ${type === 'overs' ? 'over' : 'ball'} positions · overs bowled ${rows[0]?.oversBowled ?? '—'} to ${rows.at(-1)?.oversBowled ?? '—'} · par score for 0–9 wickets`; 
+  $('tableMeta').textContent = `${rows.length} ${type === 'overs' ? 'over' : 'ball'} positions · overs bowled ${rows[0]?.oversBowled ?? '—'} to ${rows.at(-1)?.oversBowled ?? '—'} · par score for 0–9 wickets`;
   const table = $('parTable');
   const thead = table.querySelector('thead');
   const tbody = table.querySelector('tbody');
@@ -325,46 +561,47 @@ function renderTable(type) {
 document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', () => renderTable(tab.dataset.table)));
 $('matchForm').addEventListener('submit', (event) => {
   event.preventDefault();
-  $('formError').textContent = '';
-  try {
-    const input = collectInput();
-    const result = calculateMatch(input);
-    displayResult(input, result);
-  } catch (error) {
-    $('formError').textContent = error?.message || 'Could not calculate this scenario.';
-  }
+  validationStarted = true;
+  calculateAndDisplay({ scroll: true });
 });
-
 function clearOutput() {
   currentInput = null;
   currentResult = null;
   $('results').classList.add('hidden');
-  $('formError').textContent = '';
   $('saveMessage').textContent = '';
+  updateReportAvailability();
 }
 $('resetButton').addEventListener('click', () => {
+  suspendAutoCalculation = true;
+  validationStarted = false;
   $('matchName').value = '';
-  $('matchType').value = 'odi';
-  previousMatchType = 'odi';
-  $('firstOvers').value = '50';
-  $('firstRuns').value = '300';
-  $('minOversPerSide').value = '20';
+  $('matchType').value = '';
+  previousMatchType = '';
+  $('firstOvers').value = '';
+  $('firstOvers').disabled = true;
+  $('firstRuns').value = '';
+  $('minOversPerSide').value = '';
   $('minOversPerSide').readOnly = true;
-  $('minimumOversModeLabel').textContent = 'fixed by match type';
-  $('minimumOversHelp').textContent = 'ODI default: 20 minimum overs per side.';
+  $('minOversPerSide').disabled = true;
+  $('minimumOversModeLabel').textContent = 'set by match type';
+  $('minimumOversHelp').textContent = 'ODI defaults to 20; T20 defaults to 5.';
   $('autoSecondOvers').checked = true;
-  $('secondOvers').value = '50.0';
+  $('secondOvers').value = '';
+  $('secondOvers').disabled = true;
   $('penaltyRuns').value = '0';
   ['secondFinalRuns','secondFinalWickets','secondFinalOvers','reportCompetition','reportFirstTeam','reportSecondTeam','reportVenue'].forEach(id => { if ($(id)) $(id).value = ''; });
-  if ($('reportDate')) $('reportDate').value = '';
+  if ($('reportDate')) $('reportDate').value = new Date().toLocaleDateString('en-CA');
   $('firstEvents').replaceChildren();
   $('secondEvents').replaceChildren();
   updateEmptyMessages();
-  syncSecondOversFromFirst();
   clearOutput();
-  $('matchName').focus();
+  clearControlErrors();
+  $('formError').textContent = '';
+  $('autoCalcStatus').textContent = 'Select a match type and enter the match details. Calculations update automatically.';
+  syncSecondOversFromFirst();
+  suspendAutoCalculation = false;
+  $('matchType').focus();
 });
-
 function downloadBlob(filename, content, mime) {
   const blob = new Blob([content], { type: mime });
   const url = URL.createObjectURL(blob);
@@ -381,35 +618,47 @@ function safeFilename(value) {
 }
 function scenarioDocument() {
   if (!currentInput || !currentResult) throw new Error('Calculate a match first.');
-  return { app: 'DLS 6.0 Umpire Calculator', appVersion: '0.3.2', exportedAt: new Date().toISOString(), input: currentInput, resultSummary: { target: currentResult.target, lambda: currentResult.lambda, adjustmentFactor: currentResult.adjustmentFactor, noResult: currentResult.noResult } };
+  return { app: 'DLS 6.0 Umpire Calculator', appVersion: '0.4.1', exportedAt: new Date().toISOString(), input: currentInput, resultSummary: { target: currentResult.target, lambda: currentResult.lambda, adjustmentFactor: currentResult.adjustmentFactor, noResult: currentResult.noResult } };
 }
+function getReportReadiness() {
+  return evaluateReportReadiness({
+    result: currentResult,
+    finalRunsRaw: $('secondFinalRuns').value,
+    wicketsRaw: $('secondFinalWickets').value,
+    oversRaw: $('secondFinalOvers').value,
+    secondEvents: currentInput?.secondEvents || []
+  });
+}
+
 function updateReportAvailability() {
   const button = $('createMatchReport');
   if (!button) return;
-  const scoreText = $('secondFinalRuns').value.trim();
-  const score = scoreText === '' ? NaN : Number(scoreText);
-  const scoreValid = Number.isInteger(score) && score >= 0;
-  const targetReached = !!currentResult && scoreValid && score >= currentResult.target;
-  const eligible = targetReached && !currentResult.noResult;
-  button.disabled = !eligible;
+  const readiness = getReportReadiness();
+  button.disabled = !readiness.eligible;
   const tag = $('reportGateTag');
   const status = $('reportAvailability');
   if (!currentResult) {
     tag.textContent = 'Calculate a match first';
-    status.textContent = 'Calculate the DLS target, then enter the chasing team’s final score.';
-  } else if (currentResult.noResult) {
-    tag.textContent = 'No result';
-    status.textContent = `Report unavailable: ${currentResult.noResultReason}`;
-  } else if (!scoreValid) {
-    tag.textContent = 'Target not yet confirmed';
-    status.textContent = `Enter the chasing team's final score. The target is ${currentResult.target}.`;
-  } else if (!targetReached) {
-    tag.textContent = 'Target not achieved';
-    status.textContent = `Score ${score} is below the target of ${currentResult.target}. The match report remains unavailable.`;
+  } else if (!readiness.eligible) {
+    const tagLabels = {
+      'missing-score': 'Final score required',
+      'invalid-score': 'Invalid final score',
+      'invalid-wickets': 'Invalid wicket total',
+      'invalid-overs': 'Invalid finish overs',
+      'score-before-event': 'Score details inconsistent',
+      'wickets-before-event': 'Wicket details inconsistent',
+      'overs-before-event': 'Overs details inconsistent',
+      'overs-over-allocation': 'Overs exceed allocation'
+    };
+    tag.textContent = tagLabels[readiness.code] || 'Report details required';
+  } else if (readiness.code === 'no-result') {
+    tag.textContent = 'No Result · report ready';
+  } else if (readiness.code === 'target-achieved') {
+    tag.textContent = 'Target achieved · report ready';
   } else {
-    tag.textContent = 'Target achieved';
-    status.textContent = `Target ${currentResult.target} achieved with ${score} runs. The DLS match report is now available.`;
+    tag.textContent = 'Report ready';
   }
+  status.textContent = readiness.message;
 }
 
 $('secondFinalRuns').addEventListener('input', updateReportAvailability);
@@ -425,29 +674,18 @@ function reportEventRows(events) {
 }
 function createReportHtml() {
   if (!currentInput || !currentResult) throw new Error('Calculate a match first.');
-  const finalRuns = Number($('secondFinalRuns').value);
-  if (!Number.isInteger(finalRuns) || finalRuns < currentResult.target) throw new Error('The chasing team must have reached the DLS target before a match report can be created.');
-  if (currentResult.noResult) throw new Error('A match report cannot be created because the minimum-overs requirement was not met.');
-  const wicketsRaw = $('secondFinalWickets').value.trim();
-  const wicketsLost = wicketsRaw === '' ? null : Number(wicketsRaw);
-  if (wicketsLost != null && (!Number.isInteger(wicketsLost) || wicketsLost < 0 || wicketsLost > 9)) throw new Error('For a completed win, wickets lost must be a whole number from 0 to 9.');
-  for (const event of currentInput.secondEvents) {
-    if (event.scoreAtEvent != null && event.scoreAtEvent > finalRuns) throw new Error('The final chasing score cannot be lower than a score already recorded at an interruption.');
-    if (wicketsLost != null && event.wickets > wicketsLost) throw new Error('Wickets lost at finish cannot be lower than the wickets already lost at an interruption.');
-  }
+  const readiness = getReportReadiness();
+  if (!readiness.eligible) throw new Error(readiness.message);
+  const finalRuns = readiness.finalRuns;
+  const wicketsLost = readiness.wicketsLost;
   const finalOvers = $('secondFinalOvers').value.trim();
-  if (finalOvers) {
-    const parsedFinalOvers = parseOvers(finalOvers, 'Chasing innings overs at finish');
-    if (oversToBalls(parsedFinalOvers) > oversToBalls(currentResult.finalSecondOvers)) throw new Error('Overs at finish cannot exceed the revised chase length.');
-  }
   const competition = $('reportCompetition').value.trim() || '—';
   const team1 = $('reportFirstTeam').value.trim() || 'Team batting first';
   const team2 = $('reportSecondTeam').value.trim() || 'Team batting second';
   const venue = $('reportVenue').value.trim() || '—';
   const dateValue = $('reportDate').value;
   const matchDate = dateValue ? new Date(`${dateValue}T12:00:00`).toLocaleDateString('en-ZA', { day:'2-digit', month:'short', year:'numeric' }) : new Date().toLocaleDateString('en-ZA', { day:'2-digit', month:'short', year:'numeric' });
-  const wicketMargin = wicketsLost == null ? '' : ` Won by ${10 - wicketsLost} wicket${10 - wicketsLost === 1 ? '' : 's'}.`;
-  const resultText = `${team2} achieved the target of ${currentResult.target} with ${finalRuns} runs${wicketMargin}`;
+  const resultText = describeReportOutcome({ result: currentResult, finalRuns, wicketsLost, chasingTeam: team2 });
   const matchTitle = currentInput.matchName || `${team1} vs ${team2}`;
   const firstTable = reportEventRows(currentInput.firstEvents);
   const secondTable = reportEventRows(currentInput.secondEvents);
@@ -534,27 +772,28 @@ function inputFromUiRaw(input) {
 }
 function loadScenario(input) {
   const matchType = input.matchType && (MATCH_TYPES[input.matchType] || input.matchType === 'custom') ? input.matchType : 'custom';
+  suspendAutoCalculation = true;
+  validationStarted = false;
   $('matchType').value = matchType;
   previousMatchType = $('matchType').value;
-  applyMatchType($('matchType').value, { presetOvers: false });
+  applyMatchType(matchType, { presetOvers: false, preserveOtherMinimum: true });
   $('matchName').value = input.matchName || '';
   $('firstOvers').value = input.firstOvers;
   $('firstRuns').value = input.firstRuns;
-  $('minOversPerSide').value = input.minOversPerSide ?? (MATCH_TYPES[matchType]?.minOvers ?? 10);
-  applyMatchType(matchType, { presetOvers: false, preserveOtherMinimum: true });
-  $('minOversPerSide').value = input.minOversPerSide ?? (MATCH_TYPES[matchType]?.minOvers ?? 10);
+  $('minOversPerSide').value = input.minOversPerSide ?? (MATCH_TYPES[matchType]?.minOvers ?? '');
   $('autoSecondOvers').checked = input.autoSecondOvers !== false;
   $('secondOvers').value = input.secondOversNotation || formatOvers(input.secondOvers);
-  $('penaltyRuns').value = input.penaltyRuns || 0;
+  $('penaltyRuns').value = input.penaltyRuns ?? 0;
   $('firstEvents').replaceChildren();
   $('secondEvents').replaceChildren();
   (input.firstEventRows || []).forEach(row => addEventRow('firstEvents', row));
   (input.secondEventRows || []).forEach(row => addEventRow('secondEvents', row));
   updateEmptyMessages();
   syncSecondOversFromFirst();
-  $('matchForm').requestSubmit();
-}
-$('saveScenario').addEventListener('click', () => {
+  suspendAutoCalculation = false;
+  validationStarted = true;
+  calculateAndDisplay({ scroll: true });
+}$('saveScenario').addEventListener('click', () => {
   try {
     const doc = scenarioDocument();
     const saved = getSaved();
@@ -583,9 +822,6 @@ $('importScenario').addEventListener('change', async (event) => {
 renderSaved();
 updateEmptyMessages();
 if ($('reportDate')) $('reportDate').value = new Date().toLocaleDateString('en-CA');
-// Show a baseline reference result at first launch. Replace the sample inputs with the actual match details.
-try {
-  const input = collectInput();
-  displayResult(input, calculateMatch(input));
-  $('resultSub').textContent = 'Sample scenario: 50 overs, 300 runs, no interruptions. Replace the values above for your match.';
-} catch { /* User can still enter a scenario and calculate. */ }
+clearControlErrors();
+updateReportAvailability();
+$('autoCalcStatus').textContent = 'Select a match type and enter the match details. Calculations update automatically.';
