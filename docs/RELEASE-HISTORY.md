@@ -1,10 +1,10 @@
 # DLS Umpire Calculator — Release Notes & Build History
 
-**Document status:** Living development record; reconstructed from project conversations and available Git history  
-**Application status:** Proof of Concept (PoC)  
+**Document status:** Living development and release record; reconstructed from project conversations and available Git history  
+**Application status:** Version 1.0 released  
 **Current build:** 0.5.4  
 **Calculation standard:** ICC DLS 6.0  
-**Product version:** Not yet formally released  
+**Product version:** 1.0  
 **History coverage:** Initial prototype through Build 0.5.4
 
 > **Record-keeping note:** The early builds (0.1.0–0.5.0) were developed and discussed in the project conversation. The GitHub repository does not preserve a complete, one-commit-per-build source history for those early iterations; some source files were uploaded in batches. Their entries below are therefore reconstructed from contemporaneous project notes and user testing, not represented as verified individual Git commits. Git commit timestamps are recorded where available. All dates are 15 November 2026 (South African local date); exact times are shown only where supported by Git commit timestamps.
