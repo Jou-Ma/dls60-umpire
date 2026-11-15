@@ -1,0 +1,16 @@
+{
+  "id": "./",
+  "name": "DLS 6.0 Umpire Calculator",
+  "short_name": "DLS 6.0",
+  "description": "Private offline-capable DLS 6.0 umpire calculator with full par score tables.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f4f7fb",
+  "theme_color": "#10233f",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
