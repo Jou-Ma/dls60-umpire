@@ -15,7 +15,23 @@ Version 1.0 remains the current Production baseline while it is being evaluated 
 
 ## 2. Enhancement workstreams
 
-### 2.1 Titans-inspired visual refresh
+### 2.1 Tabbed application structure and navigation
+
+**Objective:** Introduce a clear tabbed structure so that different groups of functionality are available on their own tabs rather than presenting everything in one continuous interface.
+
+The tabs will form part of the overall Version 2.0 application design. Their final names, order and contents will be agreed during requirements and interface design.
+
+Planning considerations:
+- Group related functions logically and make each tab's purpose immediately clear.
+- Keep the primary match calculation workflow easy to find and use.
+- Provide separate areas for functionality that does not need to be visible during every calculation.
+- Consider how the match report and Help section are accessed from the relevant workflows.
+- Ensure the tab structure works consistently on desktop, Android and iOS/iPadOS, including smaller screens.
+- Avoid adding tabs or navigation elements that do not provide a useful function.
+
+The tab structure is an application-level enhancement and may affect the placement and organisation of existing as well as new functionality.
+
+### 2.2 Titans-inspired visual refresh
 
 **Objective:** Give the application a stronger, more polished visual identity inspired by the Titans' colours and visual style.
 
@@ -30,7 +46,7 @@ The visual refresh must retain the project's preference for a clean, functional 
 
 The design may be inspired by the Titans identity but must not imply official endorsement or affiliation unless separately authorised.
 
-### 2.2 DLS Match Report presentation redesign
+### 2.3 DLS Match Report presentation redesign
 
 **Objective:** Improve the readability and visual organisation of the existing DLS report.
 
@@ -42,10 +58,28 @@ The redesign should focus on:
 - Improved spacing, alignment, typography and table presentation.
 - Easier scanning so an umpire can locate key figures quickly.
 - A clean print/PDF layout, including sensible page breaks.
+- Convenient access to relevant Help guidance from the report, without cluttering the report itself.
 
 **Content principle:** Preserve the existing report information unless a separate, explicit requirement is agreed. The objective is to improve presentation, not silently remove useful data or alter calculation results.
 
-### 2.3 Time-based interruption calculations
+### 2.4 Help section and contextual report guidance
+
+**Objective:** Add a Help section to the application and make relevant guidance accessible from the DLS reports.
+
+The Help section should provide practical explanations that assist an umpire in using the calculator and understanding the information presented. It should be designed as a reference, not as an obstacle in the match workflow.
+
+Initial areas to consider:
+- Explanation of the calculator's functions and workflow.
+- Guidance on entering match details and interruption information.
+- Explanation of report sections, figures, terminology and outcomes.
+- Contextual links from relevant report sections to the corresponding Help topic.
+- Clear distinction between application guidance, ICC DLS 6.0 reference information and competition-specific Playing Conditions (PCs).
+
+The report should remain a clean, standalone document. Help links should provide access to explanations without unnecessarily expanding or cluttering the printed report.
+
+The exact Help topics, content, navigation and whether links appear in on-screen reports, exported/printed reports or both are to be agreed during design.
+
+### 2.5 Time-based interruption calculations
 
 **Objective:** Add support for calculating DLS interruptions using time lost, in addition to the existing overs-based interruption workflow.
 
@@ -98,8 +132,10 @@ No Version 2.0 release date or final release build is assigned by this roadmap.
 |---|---|
 | Version 1.0 · Build 0.5.4 | Current Production release |
 | Version 1.0 evaluation | Two Titans Umpire Executive members are testing |
+| Tabbed application structure | Proposed; tab names, order and functionality to be defined |
 | Titans-inspired visual refresh | Proposed; design ideas to be reviewed |
 | DLS report presentation redesign | Proposed; existing content to be retained |
+| Help section and contextual report guidance | Proposed; topics and report-link behaviour to be defined |
 | Time-based interruption calculations | Proposed; awaiting review of four calculation forms and applicable PCs |
 | Version 2.0 Development implementation | Not yet started under this roadmap |
 | Production promotion | Not authorised by this roadmap |
