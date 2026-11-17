@@ -963,3 +963,305 @@ clearControlErrors();
 updateReportAvailability();
 $('autoCalcStatus').textContent = 'Select a match type and enter the match details. Calculations update automatically.';
 if (navigator.onLine) setTimeout(() => uploadPendingMatches({ automatic: true }), 900);
+
+
+
+// Appendix A calculation worksheet. Inputs remain independent of the DLS calculator;
+// switching tabs does not clear values. Derived cells are read-only and recalculate
+// whenever any Appendix A input changes.
+(() => {
+  const fields = Object.fromEntries(
+    Array.from(document.querySelectorAll('[data-calc]')).map(el => [el.dataset.calc, el])
+  );
+  const number = key => {
+    const value = fields[key]?.value?.trim();
+    if (value === '' || value == null) return null;
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  };
+  const setNumber = (key, value, decimals = 0) => {
+    const el = fields[key];
+    if (!el) return;
+    el.value = value == null || !Number.isFinite(value) ? '' :
+      (decimals ? value.toFixed(decimals) : String(value));
+  };
+  const timeMinutes = key => {
+    const value = fields[key]?.value;
+    if (!value || !/^\d{2}:\d{2}$/.test(value)) return null;
+    const [hours, minutes] = value.split(':').map(Number);
+    return hours * 60 + minutes;
+  };
+  const setTime = (key, minutes) => {
+    const el = fields[key];
+    if (!el) return;
+    if (minutes == null || !Number.isFinite(minutes)) { el.value = ''; return; }
+    const wrapped = ((Math.round(minutes) % 1440) + 1440) % 1440;
+    el.value = String(Math.floor(wrapped / 60)).padStart(2, '0') + ':' +
+      String(wrapped % 60).padStart(2, '0');
+  };
+  const bowlingRestrictions = {"5":"2 × 2, 1 × 1","6":"3 × 2","7":"3 × 2, 1 × 1","8":"4 × 2","9":"4 × 2, 1 × 1","10":"5 × 2","11":"1 × 3, 4 × 2","12":"2 × 3, 3 × 2","13":"3 × 3, 2 × 2","14":"4 × 3, 1 × 2","15":"5 × 3","16":"1 × 4, 4 × 3","17":"2 × 4, 3 × 3","18":"3 × 4, 2 × 3","19":"4 × 4, 1 × 3","20":"5 × 4","21":"1 × 5, 4 × 4","22":"2 × 5, 3 × 4","23":"3 × 5, 2 × 4","24":"4 × 5, 1 × 4","25":"5 × 5","26":"1 × 6, 4 × 5","27":"2 × 6, 3 × 5","28":"3 × 6, 2 × 5","29":"4 × 6, 1 × 5","30":"5 × 6","31":"1 × 7, 4 × 6","32":"2 × 7, 3 × 6","33":"3 × 7, 2 × 6","34":"4 × 7, 1 × 6","35":"5 × 7","36":"1 × 8, 4 × 7","37":"2 × 8, 3 × 7","38":"3 × 8, 2 × 7","39":"4 × 8, 1 × 7","40":"5 × 8","41":"1 × 9, 4 × 8","42":"2 × 9, 3 × 8","43":"3 × 9, 2 × 8","44":"4 × 9, 1 × 8","45":"5 × 9","46":"1 × 10, 4 × 9","47":"2 × 10, 3 × 9","48":"3 × 10, 2 × 9","49":"4 × 10, 1 × 9","50":"5 × 10"};
+  // Competition-specific Powerplay allocations. T20 fractional overs are
+  // stored as balls and displayed in cricket notation (e.g. 1.3 = 1 over, 3 balls).
+  const t20Powerplay1Balls = {
+    5:9, 6:11, 7:13, 8:14, 9:16, 10:18, 11:20, 12:22,
+    13:23, 14:25, 15:27, 16:29, 17:31, 18:32, 19:34, 20:36
+  };
+  const promotion45Powerplays = {
+    20:[4,12,4],21:[4,13,4],22:[5,13,4],23:[5,14,4],24:[5,14,5],
+    25:[5,15,5],26:[5,16,5],27:[6,16,5],28:[6,17,5],29:[6,17,6],
+    30:[6,18,6],31:[6,19,6],32:[7,19,6],33:[7,20,6],34:[7,20,7],
+    35:[7,21,7],36:[7,22,7],37:[8,22,7],38:[8,23,7],39:[8,23,8],
+    40:[8,24,8],41:[8,25,8],42:[9,25,8],43:[9,26,8],44:[9,26,9],
+    45:[9,27,9]
+  };
+  const mensPremierPowerplays = {
+    20:[4,12,4],21:[4,13,4],22:[5,13,4],23:[5,14,4],24:[5,14,5],
+    25:[5,15,5],26:[5,16,5],27:[6,16,5],28:[6,17,5],29:[6,17,6],
+    30:[6,18,6],31:[6,19,6],32:[7,19,6],33:[7,20,6],34:[7,20,7],
+    35:[7,21,7],36:[7,22,7],37:[8,22,7],38:[8,23,7],39:[8,23,8],
+    40:[8,24,8],41:[8,25,8],42:[9,25,8],43:[9,26,8],44:[9,26,9],
+    45:[9,27,9],46:[9,28,9],47:[10,28,9],48:[10,29,9],49:[10,29,10],
+    50:[10,30,10]
+  };
+  const formatCricketOvers = balls => `${Math.floor(balls / 6)}.${balls % 6}`;
+  const setPowerplay = (prefix, overs) => {
+    const competition = competitionSelect?.value || '';
+    const totalOvers = overs == null ? null : Math.trunc(overs);
+    let values = null;
+    let phases = 0;
+    let description = 'Powerplay allocation not specified for this competition / innings length.';
+
+    if (competition === 't20' || competition === 'womens-t20') {
+      phases = 2;
+      description = 'Powerplay allocation (PP1 + PP2)';
+      if (totalOvers != null && t20Powerplay1Balls[totalOvers] != null) {
+        const totalBalls = totalOvers * 6;
+        const pp1Balls = t20Powerplay1Balls[totalOvers];
+        values = [formatCricketOvers(pp1Balls), formatCricketOvers(totalBalls - pp1Balls), ''];
+      }
+    } else if (competition === 'womens-35') {
+      description = 'No Powerplay applies';
+    } else if (competition === 'promotion-45') {
+      phases = 3;
+      description = 'Powerplay allocation (PP1 + PP2 + PP3)';
+      values = totalOvers == null ? null : promotion45Powerplays[totalOvers] || null;
+    } else if (competition === 'mens-premier') {
+      phases = 3;
+      description = 'Powerplay allocation (PP1 + PP2 + PP3)';
+      values = totalOvers == null ? null : mensPremierPowerplays[totalOvers] || null;
+    }
+
+    const row = fields[`${prefix}-pp1`]?.closest('tr');
+    const label = row?.querySelector('[data-pp-label]');
+    if (label) label.textContent = description;
+    const keys = [`${prefix}-pp1`, `${prefix}-pp2`, `${prefix}-pp3`];
+    keys.forEach((key, index) => {
+      const field = fields[key];
+      if (!field) return;
+      field.value = values?.[index] == null ? '' : String(values[index]);
+      field.hidden = index >= phases;
+    });
+    row?.querySelectorAll('[data-pp-plus]').forEach((separator, index) => {
+      separator.hidden = index + 1 >= phases;
+    });
+  };
+  // Display the lookup in the supplied order: bowlers × overs per bowler.
+  const bowlingDescription = overs => {
+    if (overs == null || !Number.isFinite(overs)) return '';
+    const restriction = bowlingRestrictions[String(Math.trunc(overs))];
+    if (!restriction) return 'Not specified';
+    return restriction;
+  };
+  const setBowlingRestriction = (key, overs) => {
+    const field = fields[key];
+    if (field) field.value = bowlingDescription(overs);
+  };
+  const ceilOvers = value => Math.ceil(value - 1e-10);
+  const ceilMinutes = value => Math.ceil(value - 1e-10);
+  const competitionSelect = document.getElementById('overCalcCompetition');
+  const timePerOverField = document.getElementById('timePerOver');
+  const timePerOverHelp = document.getElementById('timePerOverHelp');
+  const competitionRates = {
+    't20': 4.25,
+    'promotion-45': 3.75,
+    'womens-35': 3.75,
+    'womens-t20': 3.75,
+    'mens-premier': 4.2
+  };
+  const selectedTimePerOver = () => {
+    const value = Number(timePerOverField?.value);
+    return timePerOverField?.value?.trim() && Number.isFinite(value) && value > 0 ? value : null;
+  };
+  const updateCompetitionGate = () => {
+    const competition = competitionSelect?.value || '';
+    const selected = !!competition;
+    const customRate = Number(timePerOverField?.value);
+    const ready = selected && (competition !== 'other' ||
+      (timePerOverField?.value?.trim() && Number.isFinite(customRate) && customRate > 0));
+    const gateHelp = document.getElementById('overCalcGateHelp');
+    document.querySelectorAll('[data-calc]').forEach(field => {
+      field.disabled = !ready;
+    });
+    if (gateHelp) gateHelp.textContent = !selected
+      ? 'Competition / match type selection is required before proceeding.'
+      : ready
+        ? 'Match type and time allowance confirmed. Worksheet inputs are now available.'
+        : 'Enter a valid Time per Over above to unlock the worksheet.';
+  };
+  const updateCompetitionRate = () => {
+    const competition = competitionSelect?.value || '';
+    const isOther = competition === 'other';
+    if (timePerOverField) {
+      timePerOverField.readOnly = !isOther;
+      if (Object.prototype.hasOwnProperty.call(competitionRates, competition)) {
+        timePerOverField.value = String(competitionRates[competition]);
+      } else {
+        timePerOverField.value = '';
+      }
+      timePerOverField.placeholder = isOther ? 'Enter minutes per over' : 'Select a competition';
+    }
+    if (timePerOverHelp) {
+      timePerOverHelp.textContent = isOther
+        ? 'Enter the applicable time allowance in minutes per over. The worksheet unlocks once a valid value is entered.'
+        : 'Automatically populated from the selected competition. Select Other to enter a value.';
+    }
+    updateCompetitionGate();
+    update();
+  };
+  const update = () => {
+    const timePerOver = selectedTimePerOver();
+    // Table 1 — first-innings interruption.
+    const a = number('a-a'), b = number('a-b'), c = number('a-c'), d = number('a-d'), e = number('a-e');
+    const f = c == null || d == null || e == null ? null : c - (d + e);
+    setNumber('a-f', f);
+    const g = a == null || f == null ? null : a - f;
+    setNumber('a-g', g);
+    const h = g == null || timePerOver == null ? null : Number((g / timePerOver).toFixed(2));
+    setNumber('a-h', h, 2);
+    const i = h == null ? null : ceilOvers(h / 2);
+    setNumber('a-i', i);
+    setBowlingRestriction('a-bowler', i);
+    setPowerplay('a', i);
+
+    const j = timeMinutes('a-j'), m = number('a-m');
+    const k = i == null || timePerOver == null ? null : ceilMinutes(i * timePerOver);
+    setNumber('a-k', k);
+    const l = j == null || k == null || b == null ? null : j + (k - b);
+    setTime('a-l', l);
+    const n = l == null || m == null ? null : l + m;
+    setTime('a-n', n);
+    const o = n == null || k == null ? null : n + k;
+    setTime('a-o', o);
+
+    // Table 2 — determine whether the first innings can resume.
+    const p = timeMinutes('b-p'), q = timeMinutes('b-q');
+    let r = null;
+    if (p != null && q != null) r = ((q - p) + 1440) % 1440;
+    setNumber('b-r', r);
+    const s = r == null || timePerOver == null ? null : ceilOvers(r / timePerOver);
+    setNumber('b-s', s);
+    const t = number('b-t');
+    const terminated = s != null && t != null && s <= t;
+    const decision = fields['b-s']?.closest('tr');
+    if (decision) decision.dataset.inningsDecision = s == null || t == null ? 'pending' : terminated ? 'terminated' : 'resume';
+    document.querySelectorAll('[data-decision-option]').forEach(option => {
+      option.classList.toggle('is-selected', s != null && t != null && option.dataset.decisionOption === (terminated ? 'terminated' : 'resume'));
+    });
+
+    // Table 3 — when Table 2 determines that the first innings is terminated.
+    const a3 = terminated ? s : null;
+    setNumber('c-a', a3);
+    const b3 = a3 == null || timePerOver == null ? null : ceilMinutes(a3 * timePerOver);
+    setNumber('c-b', b3);
+    const c3 = timeMinutes('c-c');
+    const d3 = c3 == null || b3 == null ? null : c3 + b3;
+    setTime('c-d', d3);
+    setBowlingRestriction('c-bowler', a3);
+    setPowerplay('c', a3);
+
+    // Table 4 — second-innings interruption.
+    const da = timeMinutes('d-a'), db = timeMinutes('d-b'), dd = timeMinutes('d-d');
+    const dc = da == null || db == null ? null : ((db - da) + 1440) % 1440;
+    setNumber('d-c', dc);
+    const restartField = fields['d-d'];
+    const restartRow = restartField?.closest('tr');
+    const restartError = document.getElementById('d-d-error');
+    const invalidRestart = db != null && dd != null && dd < db;
+    if (restartRow) restartRow.classList.toggle('is-invalid', invalidRestart);
+    if (restartError) restartError.textContent = invalidRestart
+      ? 'Restart time cannot be earlier than the interruption time. Correct D to continue Table 4.'
+      : '';
+    if (invalidRestart) {
+      ['d-e','d-g','d-i','d-j','d-k'].forEach(key => setNumber(key, null));
+      setTime('d-l', null);
+      setBowlingRestriction('d-bowler', null);
+      setPowerplay('d', null);
+
+      return;
+    }
+    const de = db == null || dd == null ? null : dd - db;
+    setNumber('d-e', de);
+    const df = number('d-f');
+    const dg = de == null || df == null ? null : de - df;
+    setNumber('d-g', dg);
+    const dh = number('d-h');
+    const di = dg == null || timePerOver == null ? null : Math.floor(dg / timePerOver + 1e-10);
+    setNumber('d-i', di);
+    const dj = dh == null || di == null ? null : dh - di;
+    setNumber('d-j', dj);
+    const dk = dj == null || timePerOver == null ? null : ceilMinutes(dj * timePerOver);
+    setNumber('d-k', dk);
+    const dl = dd == null || dk == null || dc == null ? null : dd + (dk - dc);
+    setTime('d-l', dl);
+    setBowlingRestriction('d-bowler', dj);
+    setPowerplay('d', dj);
+
+  };
+  if (competitionSelect) competitionSelect.addEventListener('change', updateCompetitionRate);
+  if (timePerOverField) {
+    timePerOverField.addEventListener('input', () => { updateCompetitionGate(); update(); });
+    timePerOverField.addEventListener('change', () => { updateCompetitionGate(); update(); });
+  }
+  const resetButton = document.getElementById('resetAppendixA');
+  if (resetButton) resetButton.addEventListener('click', () => {
+    document.querySelectorAll('[data-calc]').forEach(el => { el.value = ''; });
+    if (competitionSelect) competitionSelect.value = '';
+
+    updateCompetitionRate();
+
+  });
+  document.querySelectorAll('[data-calc]').forEach(el => {
+    el.addEventListener('input', update);
+    el.addEventListener('change', update);
+  });
+  updateCompetitionRate();
+})();
+
+// Version 2.0: top-level application tab navigation.
+const appTabButtons = Array.from(document.querySelectorAll('[data-app-tab]'));
+const appTabPanels = appTabButtons.map(button => document.getElementById(button.getAttribute('aria-controls')));
+function activateAppTab(name, moveFocus = false) {
+  appTabButtons.forEach((button, index) => {
+    const selected = button.dataset.appTab === name;
+    button.classList.toggle('active', selected);
+    button.setAttribute('aria-selected', String(selected));
+    button.tabIndex = selected ? 0 : -1;
+    if (selected && moveFocus) button.focus();
+    const panel = appTabPanels[index];
+    if (panel) panel.hidden = !selected;
+  });
+}
+appTabButtons.forEach((button, index) => {
+  button.addEventListener('click', () => activateAppTab(button.dataset.appTab));
+  button.addEventListener('keydown', event => {
+    let next = null;
+    if (event.key === 'ArrowRight') next = (index + 1) % appTabButtons.length;
+    if (event.key === 'ArrowLeft') next = (index - 1 + appTabButtons.length) % appTabButtons.length;
+    if (event.key === 'Home') next = 0;
+    if (event.key === 'End') next = appTabButtons.length - 1;
+    if (next !== null) {
+      event.preventDefault();
+      activateAppTab(appTabButtons[next].dataset.appTab, true);
+    }
+  });
+});
