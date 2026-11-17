@@ -1,6 +1,6 @@
 # DLS Umpire Calculator — Documentation
 
-**Production baseline:** Version 2.0 · Build 1.0.1  
+**Production baseline:** Version 2.0 · Build 1.0.2  
 **Previous release:** Version 1.0 · Build 0.5.4  
 **Calculation standard:** ICC DLS 6.0
 
@@ -26,7 +26,7 @@ This documentation set is maintained separately from the calculator interface. T
 | Item | Value |
 |---|---|
 | Application status | Production release |
-| Current build | 1.0.1 |
+| Current build | 1.0.2 |
 | Calculation standard | ICC DLS 6.0 |
 | Product version | 2.0 |
 | Documentation status | Working documentation; screenshots and some detailed walkthroughs remain outstanding |
