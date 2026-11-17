@@ -2,11 +2,11 @@
 
 **Document status:** Living development and release record; reconstructed from project conversations and available Git history  
 **Application status:** Version 2.0 released  
-**Production baseline:** Version 2.0 · Build 1.0.1  
+**Production baseline:** Version 2.0 · Build 1.0.2  
 **Previous release:** Version 1.0 · Build 0.5.4  
 **Calculation standard:** ICC DLS 6.0  
 **Current product version:** 2.0  
-**History coverage:** Initial prototype through Version 2.0 · Build 1.0.1 (17 November 2026)
+**History coverage:** Initial prototype through Version 2.0 · Build 1.0.2 (17 November 2026)
 
 > **Record-keeping note:** The early builds (0.1.0–0.5.0) were developed and discussed in the project conversation. The GitHub repository does not preserve a complete, one-commit-per-build source history for those early iterations; some source files were uploaded in batches. Their entries below are therefore reconstructed from contemporaneous project notes and user testing, not represented as verified individual Git commits. Git commit timestamps are recorded where available. All dates are 15 November 2026 (South African local date); exact times are shown only where supported by Git commit timestamps.
 
@@ -395,6 +395,7 @@ The repository's current Git history contains reliable individual commits for th
 | 1.0 | 15 November 2026 | 0.5.4 | Released; first formal product release |
 | 2.0 | 17 November 2026 | 1.0.0 | Initial release; Appendix A umpire worksheets and mandatory competition gate |
 | 2.0 | 17 November 2026 | 1.0.1 | Maintenance build; redesigned match report and full-name capturer field |
+| 2.0 | 17 November 2026 | 1.0.2 | Production UI refinement; automatic calculation workflow, streamlined match setup and innings inputs |
 
 ## 6. Required entry format for future builds
 
@@ -647,3 +648,31 @@ The user stated that completion of the release documentation was the condition f
 - No automated browser/PDF rendering test was performed by the developer. Production browser/PWA smoke testing remains a post-deployment check.
 
 **Production release:** Version 2.0 · Build 1.0.1. The formal product version remains 2.0; this is a maintenance build under the project's separate build-numbering policy.
+
+
+### Build 1.0.2 — Match worksheet and interface refinement
+
+**Date:** 17 November 2026  
+**Product version:** 2.0  
+**Status:** Approved for Production.
+
+**Changes introduced:**
+- Removed the redundant **Required** badge from Match Setup.
+- Made Match Type the sole field in the first setup row; moved innings inputs into their relevant sections.
+- Moved **Reset form** to the Match Setup heading.
+- Removed the **Calculate / refresh DLS** button and redundant general status/error messages; calculation remains automatic and field-level validation remains.
+- Removed redundant first-innings lambda and adjustment-factor presentation.
+- Removed the visible second-innings overs override and displays the calculated second-innings allocation after chase interruption entries.
+- Retained one penalty-runs field, clearly describing the award to Team 1 while Team 2 is batting.
+- Ensured one blank interruption row is available for each innings on a new or reset form; untouched blank rows do not affect calculations.
+- Retained the approved A4 chronological match report and single full-name capturer field.
+- Updated Production styling to match the approved Development layout while retaining the Production blue identity.
+- Advanced the Production service-worker cache to `dls60-umpire-shell-v17`.
+
+**Explicitly excluded:** Recommencement Settings / Recommencement Scenarios remain deferred and are not included in this Production build.
+
+**Calculation impact:** The DLS 6.0 engine and Appendix A formulas are unchanged. This build updates worksheet presentation, input handling and automatic allocation display.
+
+**Validation:** Static source checks passed for the updated form, report, blank interruption rows, Production archive configuration, blue Production branding and cache v17. No automated browser interaction or PDF-rendering test was performed by the developer. Production smoke testing remains required.
+
+**Production release:** Version 2.0 · Build 1.0.2.
