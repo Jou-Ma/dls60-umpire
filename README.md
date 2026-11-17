@@ -42,7 +42,22 @@ Open the app online at least once so the service worker can cache the applicatio
 
 Saved matches are device/browser-local unless uploaded to the separately configured private archive. Installing the PWA on another device does not automatically transfer local records.
 
-## Appendix A — umpire calculation worksheets\n\nThe application provides three top-level tabs: **DLS 6.0**, **Appendix A** and **Help**. Appendix A contains four linked worksheets:\n\n- **Table 1:** first-innings delay/interruption and revised playing time, overs and cessation times.\n- **Table 2:** restart/cut-off comparison to determine whether the first innings can continue or should be terminated.\n- **Table 3:** second-innings allocation and scheduled cessation following first-innings termination.\n- **Table 4:** second-innings interruption, elapsed time, overs lost and amended cessation. A restart time earlier than the interruption start is rejected and dependent outputs are cleared.\n\nThe competition selector is mandatory before any worksheet values can be entered. The configured time-per-over values are T20 (4.25 minutes), Promotion League 45 (3.75), Women's League 35 (3.75), Women's T20 (3.75) and Men's Premier League (4.2). **Other** requires a valid positive custom value.\n\nAppendix A also provides a bowling-restriction lookup and separate Powerplay 1, Powerplay 2 and Powerplay 3 outputs. Competition-specific allocations are used where supplied, including shortened-innings Men's Premier League allocations. Confirm the relevant competition playing conditions before use.\n\nRecommencement Settings and Recommencement Scenarios are deferred and are not included in Version 2.0.\n\n## Validation summary
+## Appendix A — umpire calculation worksheets
+
+The application provides three top-level tabs: **DLS 6.0**, **Appendix A** and **Help**. Appendix A contains four linked worksheets:
+
+- **Table 1:** first-innings delay/interruption and revised playing time, overs and cessation times.
+- **Table 2:** restart/cut-off comparison to determine whether the first innings can continue or should be terminated.
+- **Table 3:** second-innings allocation and scheduled cessation following first-innings termination.
+- **Table 4:** second-innings interruption, elapsed time, overs lost and amended cessation. A restart time earlier than the interruption start is rejected and dependent outputs are cleared.
+
+The competition selector is mandatory before any worksheet values can be entered. The configured time-per-over values are T20 (4.25 minutes), Promotion League 45 (3.75), Women's League 35 (3.75), Women's T20 (3.75) and Men's Premier League (4.2). **Other** requires a valid positive custom value.
+
+Appendix A also provides a bowling-restriction lookup and separate Powerplay 1, Powerplay 2 and Powerplay 3 outputs. Competition-specific allocations are used where supplied, including shortened-innings Men's Premier League allocations. Confirm the relevant competition playing conditions before use.
+
+Recommencement Settings and Recommencement Scenarios are deferred and are not included in Version 2.0.
+
+## Validation summary
 
 The DLS engine baseline (Build 0.5.4, included in Version 1.0) was tested by the project owner against selected outputs from the supplied official DLS 6.0 application/JAR. Appendix A was separately tested manually in Development before promotion to Version 2.0.
 
