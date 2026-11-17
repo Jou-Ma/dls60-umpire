@@ -29,7 +29,7 @@
 
     <nav class="app-tabs" role="tablist" aria-label="Application sections">
       <button class="app-tab active" id="tab-button-dls" type="button" role="tab" aria-selected="true" aria-controls="tab-dls" data-app-tab="dls">DLS 6.0</button>
-      <button class="app-tab" id="tab-button-a" type="button" role="tab" aria-selected="false" aria-controls="tab-a" data-app-tab="a" tabindex="-1">Over Calcs</button>
+      <button class="app-tab" id="tab-button-a" type="button" role="tab" aria-selected="false" aria-controls="tab-a" data-app-tab="a" tabindex="-1">Appendix A</button>
       <button class="app-tab" id="tab-button-help" type="button" role="tab" aria-selected="false" aria-controls="tab-help" data-app-tab="help" tabindex="-1">Help</button>
     </nav>
     <section class="app-tab-panel active" id="tab-dls" role="tabpanel" aria-labelledby="tab-button-dls">
@@ -38,9 +38,9 @@
       <section class="panel match-panel">
         <div class="panel-heading">
           <div><div class="step-label">01 · MATCH DETAILS</div><h2>Match setup</h2></div>
-          <span class="tag">Required</span>
+          <div class="panel-heading-actions"><button class="button button-secondary" id="resetButton" type="button">Reset form</button></div>
         </div>
-        <div class="field-grid field-grid-4">
+        <div class="field-grid match-type-row">
           <label class="field"><span>Match type</span>
             <select id="matchType" required aria-describedby="matchTypeError">
               <option value="" selected disabled>Select match type…</option>
@@ -48,32 +48,31 @@
               <option value="t20">Twenty20 (20 overs/innings; min. 5 overs/side)</option>
               <optgroup label="Other match types">
                 <option value="other-50-10">50 overs/innings (default minimum 10)</option>
-                <option value="other-45-20">45 overs/innings (default minimum 20)</option>
+                <option value="other-45-20">Promotion League – 45 Overs (minimum 20)</option>
+                <option value="womens-35">Women's League – 35 Overs (minimum editable)</option>
+                <option value="womens-t20">Women's T20 (minimum editable)</option>
                 <option value="other-40-10">40 overs/innings (default minimum 10)</option>
                 <option value="custom">Custom match type…</option>
               </optgroup>
             </select>
             <small id="matchTypeError" class="field-error" aria-live="polite"></small>
           </label>
-          <label class="field"><span>Match / fixture name <small>optional</small></span><input id="matchName" type="text" placeholder="e.g. Tuks 2 vs Irene" maxlength="80"></label>
-          <label class="field"><span>First-innings scheduled overs</span><input id="firstOvers" type="number" min="1" max="100" step="1" placeholder="Select match type first" disabled required><small class="field-error" aria-live="polite"></small></label>
-          <label class="field"><span>First-innings total runs</span><input id="firstRuns" type="number" min="0" max="999" step="1" placeholder="Enter final innings total" required><small class="field-error" aria-live="polite"></small></label>
         </div>
         <div class="field-grid field-grid-3 field-grid-bottom">
-          <label class="field"><span>Second-innings scheduled overs <small id="secondOversModeLabel">automatic</small></span><input id="secondOvers" type="text" inputmode="decimal" placeholder="Set by match setup" disabled readonly required><small id="secondOversHelp" class="field-help">Select a match type to allocate the chasing overs.</small><small class="field-error" aria-live="polite"></small></label>
-          <label class="field"><span>Minimum overs per side <small id="minimumOversModeLabel">set by match type</small></span><input id="minOversPerSide" type="number" min="1" max="99" step="1" placeholder="Set by match setup" disabled readonly><small id="minimumOversHelp" class="field-help">ODI defaults to 20; T20 defaults to 5.</small><small class="field-error" aria-live="polite"></small></label>
-          <label class="field"><span>Penalty runs <small>optional</small></span><input id="penaltyRuns" type="number" min="0" max="999" step="1" value="0"><small class="field-error" aria-live="polite"></small></label>
+          <label class="field"><span>Overs per innings</span><input id="firstOvers" type="number" min="1" max="100" step="1" placeholder="Select match type first" disabled required><small class="field-error" aria-live="polite"></small></label>
+          <label class="field"><span>Minimum overs per side</span><input id="minOversPerSide" type="number" min="1" max="99" step="1" placeholder="Set by match setup" disabled readonly><small id="minimumOversHelp" class="field-help">ODI defaults to 20; T20 defaults to 5.</small><small class="field-error" aria-live="polite"></small></label>
         </div>
-        <div class="auto-allocation-row">
-          <label class="toggle-field"><input id="autoSecondOvers" type="checkbox" checked><span><strong>Automatically calculate second-innings overs</strong><small>First-innings scheduled overs less all first-innings interruption losses.</small></span></label>
-          <div class="overs-notation-help"><strong>Cricket overs notation:</strong> 17.3 means 17 overs and 3 balls, not 17.3 decimal overs. Use this notation for interruption entries and manual second-innings overs.</div>
-        </div>
+        <input id="secondOvers" type="hidden">
+        <input id="autoSecondOvers" type="checkbox" checked hidden>
       </section>
 
       <section class="panel">
         <div class="panel-heading">
-          <div><div class="step-label">02 · FIRST INNINGS</div><h2>Batting first interruptions</h2><p class="panel-hint">Events must be entered in the order they happened. Overs bowled is cumulative from the start of the innings.</p></div>
+          <div><div class="step-label">02 · FIRST INNINGS</div><h2>Batting first interruptions</h2><p class="panel-hint">Enter the over position and wickets at each stoppage. Overs bowled is cumulative from the start of the innings.</p></div>
           <button class="button button-outline" id="addFirstEvent" type="button"><span class="plus">＋</span> Add event</button>
+        </div>
+        <div class="field-grid field-grid-2 innings-score-grid">
+          <label class="field"><span>First-innings total runs</span><input id="firstRuns" type="number" min="0" max="999" step="1" placeholder="Enter final innings total" required><small class="field-error" aria-live="polite"></small></label>
         </div>
         <div id="firstEvents" class="event-list"></div>
         <div id="firstEmpty" class="empty-events">No first-innings interruptions entered.</div>
@@ -86,20 +85,17 @@
         </div>
         <div id="secondEvents" class="event-list"></div>
         <div id="secondEmpty" class="empty-events">No second-innings interruptions entered.</div>
+        <div class="calculated-allocation calculated-allocation-inline"><span>Calculated second-innings overs</span><strong id="calculatedSecondOvers">—</strong><small>After applying second-innings interruptions</small></div>
+        <div class="field-grid field-grid-2 innings-score-grid penalty-award-row">
+          <label class="field"><span>Penalty runs awarded to Team 1 while Team 2 is batting <small>optional</small></span><input id="penaltyRuns" type="number" min="0" max="999" step="1" value="0"><small class="field-error" aria-live="polite"></small></label>
+        </div>
       </section>
 
-      <div class="form-actions">
-        <button class="button button-primary button-large" type="submit"><span>Calculate / refresh DLS</span><span aria-hidden="true">→</span></button>
-        <button class="button button-secondary" id="resetButton" type="button">Reset form</button>
-      </div>
-      <p id="autoCalcStatus" class="auto-calc-status" role="status" aria-live="polite">Calculations update automatically once the required match details are valid.</p>
-      <p id="formError" class="form-error" role="alert" aria-live="polite"></p>
     </form>
 
     <section id="results" class="results hidden" aria-live="polite">
       <div class="result-heading">
         <div><div class="step-label">04 · CALCULATION RESULT</div><h2 id="resultTitle">Revised target</h2><p id="resultSub" class="panel-hint"></p></div>
-        <span class="verified-tag"><span>●</span> Local calculation</span>
       </div>
       <div id="minimumOversOutcome" class="minimum-overs-outcome hidden" role="status" aria-live="polite"></div>
       <div class="result-grid">
@@ -108,9 +104,6 @@
           <div class="target-number" id="targetNumber">—</div>
           <div class="target-caption">Runs to win</div>
         </article>
-        <article class="metric-card"><div class="metric-label">First-innings lambda</div><div class="metric-value" id="lambdaValue">—</div><div class="metric-note">Fitted model parameter</div></article>
-        <article class="metric-card"><div class="metric-label">Adjustment factor</div><div class="metric-value" id="adjustmentValue">—</div><div class="metric-note">Applied to second innings</div></article>
-        <article class="metric-card"><div class="metric-label">Revised chase length</div><div class="metric-value" id="revisedOvers">—</div><div class="metric-note">After second-innings losses</div></article>
       </div>
       <div class="resource-summary" id="resourceSummary"></div>
 
@@ -127,6 +120,7 @@
         <details class="report-details">
           <summary>Additional report details (optional)</summary>
           <div class="field-grid field-grid-3 report-meta-grid">
+            <label class="field"><span>Match / fixture name <small>optional</small></span><input id="matchName" type="text" placeholder="e.g. Tuks 2 vs Irene" maxlength="80"></label>
             <label class="field"><span>Captured by — Full Name</span><input id="reportCapturerFullName" type="text" autocomplete="name" maxlength="120" placeholder="Full name"></label>
             <label class="field"><span>Competition</span><input id="reportCompetition" type="text" maxlength="100" placeholder="e.g. Titans Premier League"></label>
             <label class="field"><span>Team batting first</span><input id="reportFirstTeam" type="text" maxlength="80" placeholder="First innings team"></label>
@@ -166,13 +160,13 @@
       <div class="panel-heading"><div><div class="step-label">LOCAL STORAGE</div><h2>Saved matches</h2><p class="panel-hint">Stored only in this browser on this device.</p></div><button id="clearSaved" class="button button-quiet" type="button">Clear saved</button></div>
       <div id="savedList" class="saved-list"><div class="empty-events">No saved matches yet.</div></div>
       <div class="upload-box">
-        <div class="upload-box-heading"><div><strong>Private match archive</strong><p class="panel-hint">Saved matches remain on this device until they are uploaded to the private archive.</p></div><span id="uploadQueueBadge" class="tag">0 pending</span></div>
-        <div class="upload-actions"><p id="uploadStatus" class="upload-status" role="status" aria-live="polite">Matches save on this device and upload automatically when an internet connection is available.</p><button id="syncNow" class="button button-primary" type="button">Sync now</button></div>
+        <div class="upload-box-heading"><div><strong>Development mode · local records only</strong><p class="panel-hint">Development copy: saved matches remain on this device. Private archive uploads are disabled.</p></div><span id="uploadQueueBadge" class="tag">0 pending</span></div>
+        <div class="upload-actions"><p id="uploadStatus" class="upload-status" role="status" aria-live="polite">Development copy: matches are saved on this device only. Private archive uploads are disabled.</p><button id="syncNow" class="button button-primary" type="button">Uploads disabled</button></div>
       </div>
     </section>
 
     <section class="disclaimer">
-      <strong>Release status:</strong> Version 2.0 · Build 1.0.1. Includes the A4 narrative match report. The browser engine has been compared with selected outputs from the supplied ICC DLS 6.0 application, including multi-interruption cases and over-by-over / ball-by-ball tables. These are targeted validation scenarios, not exhaustive verification of every possible input combination. For official match decisions, use the authorised DLS application and follow the applicable playing conditions.
+      <strong>DEVELOPMENT ENVIRONMENT:</strong> Based on Version 1.0 · Build 0.5.4. The browser engine has been compared with selected outputs from the supplied ICC DLS 6.0 application, including multi-interruption cases and over-by-over / ball-by-ball tables. These are targeted validation scenarios, not exhaustive verification of every possible input combination. For official match decisions, use the authorised DLS application and follow the applicable playing conditions.
       <p>DLS is proprietary. This independent tool is not an ICC product and is not certified, endorsed or approved by the ICC. No official DLS software or JAR is distributed with this application.</p>
     </section>
     </section>
@@ -180,7 +174,7 @@
     <section class="app-tab-panel" id="tab-a" role="tabpanel" aria-labelledby="tab-button-a" hidden>
       <div class="appendix-heading">
         <div><div class="step-label">TIME-BASED CALCULATIONS</div><h1>Over Calcs</h1><p class="panel-hint">Time-based calculation sheets for delays and interruptions. Enter the relevant inputs; calculated fields update automatically. Use this tab only when the applicable match conditions require these time-based calculations.</p></div>
-        <div class="appendix-heading-actions"><span class="tag">Appendix A</span><button class="button button-secondary" id="resetAppendixA" type="button">Reset Over Calcs</button></div>
+        <div class="appendix-heading-actions"><span class="tag">Draft layout</span><button class="button button-secondary" id="resetAppendixA" type="button">Reset Over Calcs</button></div>
       </div>
       <section class="panel over-calc-settings" aria-label="Competition settings">
         <div class="panel-heading"><div><div class="step-label">MATCH CONDITIONS</div><h2>Competition settings</h2><p class="panel-hint">Select the applicable competition / match type first. All worksheet entries remain locked until this selection sets the correct time allowance.</p></div></div>
@@ -274,7 +268,7 @@
           <tr><td></td><td data-pp-label>Powerplay allocation</td><td class="split-entry powerplay-entry"><input disabled data-calc="d-pp1" aria-label="Powerplay 1 overs" readonly aria-readonly="true" placeholder="P1"><span data-pp-plus>+</span><input disabled data-calc="d-pp2" aria-label="Powerplay 2 overs" readonly aria-readonly="true" placeholder="P2"><span data-pp-plus>+</span><input disabled data-calc="d-pp3" aria-label="Powerplay 3 overs" readonly aria-readonly="true" placeholder="P3"></td></tr>
         </tbody></table></div>
       </section>
-      
+
       <p class="appendix-footnote">Appendix A calculation worksheet. Calculated fields update automatically from the supplied Appendix A formulas. Confirm the applicable Playing Conditions before using the outputs for a match.</p>
     </section>
     <section class="app-tab-panel placeholder-panel" id="tab-help" role="tabpanel" aria-labelledby="tab-button-help" hidden>
@@ -289,7 +283,7 @@
     </section>
 
   </main>
-  <footer class="footer"><span>DLS 6.0 · Offline-first umpire tool</span><span id="appVersion">Version 2.0 · Build 1.0.0</span></footer>
+  <footer class="footer"><span>DLS 6.0 · Offline-first umpire tool</span><span id="appVersion">Version 2.0 · Build 1.0.2</span></footer>
   <script type="module" src="app.js"></script>
 </body>
 </html>
