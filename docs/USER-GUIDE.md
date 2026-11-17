@@ -1,7 +1,7 @@
 # DLS Umpire Calculator — User Guide
 
 **Document status:** Working guide; screenshots and final platform walkthrough remain outstanding  
-**Production baseline:** Version 2.0 · Build 1.0.0  
+**Production baseline:** Version 2.0 · Build 1.0.1  
 **Previous release:** Version 1.0 · Build 0.5.4  
 **Calculation standard:** ICC DLS 6.0
 
@@ -42,7 +42,9 @@
 - Revised target
 - Final score and wickets
 - Result determination
-- Match report fields
+- Optional **Captured by — Full Name** field in Additional report details
+- Competition, batting team names, venue and match date
+- A4 portrait narrative report with conditional interruption tables
 - Printing or saving a report
 
 ## 7. Saved matches and synchronisation
@@ -80,7 +82,7 @@
 
 ## Editorial notes / content still required
 
-- Capture screenshots of the current Build 0.5.4 interface.
+- Capture screenshots of the current Build 1.0.1 interface.
 - Confirm exact menu labels and field names against the live build.
 - Document the final save, report and synchronisation workflows from hands-on testing.
 - Add platform-specific screenshots only after the instructions have been verified.
@@ -118,3 +120,10 @@ The worksheet provides the applicable bowling-restriction lookup and separate Po
 ### Deferred recommencement feature
 
 Recommencement Settings and Recommencement Scenarios are a future enhancement. They are hidden in Development and are not included in Version 2.0 Production.
+
+
+### Match report — Build 1.0.1
+
+In the DLS Match Report section, open **Additional report details (optional)** to enter the report preparer's full name, competition, batting team names, venue and match date. The capturer name is optional and is displayed discreetly in the report footer when supplied.
+
+The printable report is arranged chronologically: match format and minimum overs; first innings and any interruption records; second innings and any interruption records; revised DLS target; and match result. Interruption tables are omitted when there are no interruptions. Use the browser's print dialog to print or save the report as a PDF.
