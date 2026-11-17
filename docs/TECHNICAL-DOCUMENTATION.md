@@ -1,7 +1,7 @@
 # DLS Umpire Calculator — Technical Documentation
 
 **Document status:** Working technical reference; detailed implementation inventory remains in progress  
-**Production baseline:** Version 2.0 · Build 1.0.0  
+**Production baseline:** Version 2.0 · Build 1.0.1  
 **Previous release:** Version 1.0 · Build 0.5.4  
 **Calculation standard:** ICC DLS 6.0
 
@@ -119,3 +119,12 @@ The bowling-restriction and Powerplay lookup exposes three outputs (Powerplay 1,
 **Deferred:** Recommencement Settings and Recommencement Scenarios were prototyped in Development but hidden and excluded from Version 2.0 Production. No recommencement code or UI was promoted. Their logic remains subject to further requirements analysis.
 
 **Environment separation:** The source development branch is `dev` in `Jou-Ma/dls60-umpire`. The separate Development hosting repository is `Jou-Ma/dls60-umpire-dev`. Production remains the `main` branch and the blue-header deployment. Development-only configuration must not be copied into Production, particularly the intentionally blank local archive-upload configuration in the Development hosting repository.
+
+
+## 12. Match report and capturer identity — Build 1.0.1
+
+The report renderer in `app.js` generates a standalone A4 portrait HTML document for browser printing/PDF output. It uses a chronological narrative layout, with interruption tables included only when the corresponding innings has event records. The DLS calculation engine, target and par-score calculations are not modified by the report renderer.
+
+The report preparer's name is captured as one optional `capturerFullName` value. Saved scenario normalization accepts the legacy `capturerFirstName` and `capturerSurname` properties and combines them when loading older scenarios. The archive record retains the established `capturedBy` object keys and adds the consolidated full-name value; the application build metadata is `1.0.1`.
+
+The Production service-worker cache namespace is `dls60-umpire-shell-v16`. The Development hosting repository has a separate cache namespace and blank archive-upload configuration; neither is copied into Production.
