@@ -1,7 +1,7 @@
 # DLS Umpire Calculator — Testing & Validation Report
 
 **Document status:** Ongoing validation record  
-**Production baseline:** Version 2.0 · Build 1.0.1  
+**Production baseline:** Version 2.0 · Build 1.0.2  
 **Previous DLS engine baseline:** Version 1.0 · Build 0.5.4  
 **Calculation standard:** ICC DLS 6.0
 
@@ -191,3 +191,23 @@ The recommencement scenario prototype is not accepted for this release. The user
 | Calculation engine | DLS target and resource calculation | Unchanged by this build |
 
 **Limitations:** No automated browser test or PDF-rendering regression test was performed by the developer. The project owner's visual acceptance was performed in Development. Production browser/PWA smoke testing remains outstanding after publication.
+
+
+## 10. Version 2.0 · Build 1.0.2 — Worksheet interface promotion
+
+**Environment:** Development source promoted to Production  
+**Review:** Project owner previously directed the approved Development changes to be released.
+
+| Area | Source-level validation |
+|---|---|
+| Match setup | Required badge removed; Match Type isolated on its own row; Reset form positioned in the section heading |
+| Calculation workflow | Calculate button and general status/error paragraphs removed; automatic calculation retained |
+| Innings input | First-innings score grouped with first-innings interruptions; calculated second-innings overs displayed after chase interruptions |
+| Penalty runs | One field, explicitly identifying the award to Team 1 while Team 2 bats |
+| Interruption defaults | One blank row created for each innings; blank rows ignored by calculation |
+| Redundant outputs | First-innings lambda and adjustment-factor presentation removed |
+| Match report | Approved A4 narrative report and full-name capturer field retained |
+| Release controls | Production blue theme, Production archive configuration and service-worker cache v17 retained |
+| Deferred scope | Recommencement scenarios excluded |
+
+**Result:** All listed source-level checks passed before the Production update. No automated browser or PDF-rendering regression test was run by the developer. A Production smoke test is still required.
