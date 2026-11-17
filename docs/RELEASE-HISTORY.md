@@ -2,11 +2,11 @@
 
 **Document status:** Living development and release record; reconstructed from project conversations and available Git history  
 **Application status:** Version 2.0 released  
-**Production baseline:** Version 2.0 · Build 1.0.0  
+**Production baseline:** Version 2.0 · Build 1.0.1  
 **Previous release:** Version 1.0 · Build 0.5.4  
 **Calculation standard:** ICC DLS 6.0  
 **Current product version:** 2.0  
-**History coverage:** Initial prototype through Version 2.0 release (17 November 2026)
+**History coverage:** Initial prototype through Version 2.0 · Build 1.0.1 (17 November 2026)
 
 > **Record-keeping note:** The early builds (0.1.0–0.5.0) were developed and discussed in the project conversation. The GitHub repository does not preserve a complete, one-commit-per-build source history for those early iterations; some source files were uploaded in batches. Their entries below are therefore reconstructed from contemporaneous project notes and user testing, not represented as verified individual Git commits. Git commit timestamps are recorded where available. All dates are 15 November 2026 (South African local date); exact times are shown only where supported by Git commit timestamps.
 
@@ -393,7 +393,8 @@ The repository's current Git history contains reliable individual commits for th
 | Product version | Release date | Release build | Status |
 |---|---|---|---|
 | 1.0 | 15 November 2026 | 0.5.4 | Released; first formal product release |
-| 2.0 | 17 November 2026 | 1.0.0 | Released; Appendix A umpire worksheets and mandatory competition gate |
+| 2.0 | 17 November 2026 | 1.0.0 | Initial release; Appendix A umpire worksheets and mandatory competition gate |
+| 2.0 | 17 November 2026 | 1.0.1 | Maintenance build; redesigned match report and full-name capturer field |
 
 ## 6. Required entry format for future builds
 
@@ -602,3 +603,31 @@ The user stated that completion of the release documentation was the condition f
 **Validation summary:** The project owner reported that Tables 1–4 had been exercised across multiple constructed scenarios and were working as expected; Table 1 had also previously been used in a real T20 International context. The competition gate was separately tested and confirmed working. These were manual user tests, not an exhaustive automated test suite. The production code passed static promotion checks for required tabs, all four tables, the competition gate, production archive configuration, blue theme, build metadata and absence of recommencement code. No automated browser test was performed as part of this promotion.
 
 **Post-deployment action:** The project owner should perform a browser/PWA smoke test on the Production URL, including tab navigation, Appendix A calculations, competition gate, match save/archive upload and installed-PWA cache refresh. The release is promoted; this final hands-on production verification is outstanding.
+
+
+### Build 1.0.1 — Match report presentation refinement
+
+**Date:** 17 November 2026  
+**Product version:** 2.0  
+**Status:** Approved for Production; Development report reviewed and accepted by the project owner.
+
+**Changes introduced:**
+- Replaced the card/tile-style printable report with a concise chronological A4 portrait match report.
+- Retained the report header and match identity details.
+- Consolidated match format and minimum-overs information into one line.
+- Presented first- and second-innings details as readable narrative sections, with interruption tables shown only when interruptions exist.
+- Removed repeated allocation facts and unnecessary technical calculation parameters from the report.
+- Kept the revised DLS target, result and report disclaimer.
+- Displayed the report preparer's name in a single **Captured by — Full Name** field and discreetly in the report footer.
+- Preserved compatibility when loading saved scenarios that contain the earlier separate first-name and surname fields.
+
+**Files changed:** `app.js`, `index.html`, `match-record.js`, `sw.js`, release and validation documentation.
+
+**Calculation impact:** No change to the DLS 6.0 calculation engine, target calculation, par-score tables or Appendix A calculations.
+
+**Validation and approval:**
+- The project owner reviewed the generated report in Development and confirmed that the new layout was intuitive and easy to read.
+- Source-level checks were performed for the report structure, conditional interruption tables, full-name capture, saved-scenario compatibility, Production archive configuration and service-worker cache update.
+- No automated browser/PDF rendering test was performed by the developer. Production browser/PWA smoke testing remains a post-deployment check.
+
+**Production release:** Version 2.0 · Build 1.0.1. The formal product version remains 2.0; this is a maintenance build under the project's separate build-numbering policy.
