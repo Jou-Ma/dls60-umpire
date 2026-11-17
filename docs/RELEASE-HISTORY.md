@@ -632,6 +632,12 @@ The user stated that completion of the release documentation was the condition f
 - `53f300589785a27dabf0ddebe33f50a90be8861e` — validation record.
 - `ff21cf8142b050a8db8814301ae95bcf9c9dc7d3` — README update.
 - `9bdfddd48ae9faad91f4764024134e5abb2c25b4` — archive full-name validation regex correction.
+- `20358b4ee26b46ef7d6ead59c4ec0a24d3dbbdd9` — normalize legacy saved scenarios to the optional full-name field.
+- `9b59c9f16acf5bc589d68fbfa02843db438e4aa8` — preserve blank legacy capturer values in archive records.
+- `8aeefb9856dbcb8e57ac1a592e5ba3d9fa19d7fa` — hide the legacy blank-name placeholder in saved-match listings.
+- `8e0f2bd1b9dc1d71aa9cf82879186655a0f39f56` — update the user guide.
+- `93fb2288fe1ea261d5c6587ea922629eccdc17da` — update technical documentation.
+- `7f2dc0746515728b6365e91aee91edec16ccc38f` — update documentation index and document control.
 
 **Calculation impact:** No change to the DLS 6.0 calculation engine, target calculation, par-score tables or Appendix A calculations.
 
