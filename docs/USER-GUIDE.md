@@ -1,9 +1,9 @@
 # DLS Umpire Calculator — User Guide
 
-**Document status:** Draft structure  
-**Application baseline:** PoC Build 0.5.4  
-**Calculation standard:** ICC DLS 6.0  
-**Product version:** Not yet formally released
+**Document status:** Working guide; screenshots and final platform walkthrough remain outstanding  
+**Production baseline:** Version 1.0 · Build 0.5.4  
+**Development target:** Version 2.0 (build identifier not assigned)  
+**Calculation standard:** ICC DLS 6.0
 
 ## 1. Introduction
 - Purpose and intended users
@@ -85,3 +85,36 @@
 - Document the final save, report and synchronisation workflows from hands-on testing.
 - Add platform-specific screenshots only after the instructions have been verified.
 - Do not describe any feature as available until it has been confirmed in the current build.
+
+
+## 11. Appendix A — Over Calcs (Version 2.0 Development)
+
+The Development application provides an **Appendix A** tab with four umpire calculation worksheets. These worksheets support manual playing-time decisions and do not replace the applicable competition playing conditions or the umpire's own calculations and judgement.
+
+### Before entering worksheet values
+
+1. Open **Appendix A**.
+2. Select the applicable competition/match type first.
+3. Confirm the time-per-over value supplied for that competition.
+4. Only then enter worksheet values.
+
+The worksheet is deliberately locked until a competition is selected. For **Other**, enter a valid positive time-per-over value before the worksheet unlocks. This prevents the calculations from running with an undefined time-per-over setting.
+
+Configured Development values are T20 (4.25 minutes per over), Promotion League 45 (3.75), Women's League 35 (3.75), Women's T20 (3.75) and Men's Premier League (4.2). Confirm these values against the competition rules applicable to the match being umpired.
+
+### Tables
+
+- **Table 1** calculates revised playing time and innings/cessation times following a delay or interruption.
+- **Table 2** assesses whether the first innings can continue or should be terminated based on the restart and cut-off times.
+- **Table 3** calculates the second-innings allocation where the first innings is terminated.
+- **Table 4** recalculates the second-innings maximum overs and amended cessation after an interruption. A restart time earlier than the interruption start is invalid and blocks the dependent calculation.
+
+Calculated fields are read-only. Use the Reset control to clear the worksheet and begin again; the competition selection must be made again after reset.
+
+### Bowling restrictions and Powerplays
+
+The worksheet provides the applicable bowling-restriction lookup and separate Powerplay 1, Powerplay 2 and Powerplay 3 outputs. Competition-specific rules, including shortened Men's Premier League innings, are used where supplied. Always verify the selected competition and applicable playing conditions before relying on these values.
+
+### Deferred recommencement feature
+
+Recommencement Settings and Recommencement Scenarios are a future enhancement and are hidden in the current Development interface pending further design. They are not part of the current Production release.
