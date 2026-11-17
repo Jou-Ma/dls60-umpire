@@ -1,9 +1,9 @@
 # DLS Umpire Calculator — Testing & Validation Report
 
-**Document status:** Initial test record; ongoing  
-**Application baseline:** PoC Build 0.5.4  
-**Calculation standard:** ICC DLS 6.0  
-**Product version:** Not yet formally released
+**Document status:** Ongoing validation record  
+**Production baseline:** Version 2.0 · Build 1.0.0  
+**Previous DLS engine baseline:** Version 1.0 · Build 0.5.4  
+**Calculation standard:** ICC DLS 6.0
 
 ## 1. Purpose
 
@@ -110,3 +110,65 @@ Maintain a separate reproducible test case for each of the following:
 ## 7. Test evidence register
 
 For each test, retain the input sheet, official reference output, application output and a short comparison record. Do not rely solely on a statement that two results matched.
+
+
+## 8. Version 2.0 Appendix A release validation — 15–17 November 2026
+
+**Environment:** Development test environment; functionality promoted to Production in Build 1.0.0  
+**Product release:** Version 2.0  
+**Build identifier:** 1.0.0  
+**Tester:** Project owner/user  
+**Method:** Manual worksheet scenario testing and review of calculated outputs; not an automated exhaustive test suite.
+
+### 8.1 Tables 1–4
+
+The user reported that all four Appendix A tables had been exercised with multiple constructed scenarios and were working as expected. These tests were performed without live match conditions. Table 1 had also previously been used in a real T20 International context.
+
+| Area | Validation performed | Recorded result |
+|---|---|---|
+| Table 1 | Multiple playing-time, delay and interruption scenarios | User reported working as expected |
+| Table 2 | Restart/cut-off comparison and first-innings continuation/termination decision | User reported working as expected |
+| Table 3 | Second-innings allocation after first-innings termination | User reported working as expected |
+| Table 4 | Second-innings interruption, elapsed duration, overs lost and amended cessation | User reported working as expected |
+| Table 4 invalid restart | Restart earlier than interruption start | Error shown; dependent calculations cleared; user confirmed correction |
+| Worksheet reset | Reset after selecting a competition and entering values | Competition returns to unselected state and worksheet relocks |
+
+### 8.2 Competition gate — missing match type/time per over
+
+A scenario exposed that Over Calcs could be left without a known time-per-over value if the competition/match type was not selected. The worksheet could not correctly derive the overs result in that condition.
+
+The correction requires a competition selection before any calculation input can be captured. For **Other**, a valid positive custom time-per-over value is also required.
+
+**Control test case:**
+
+| Field | Value |
+|---|---:|
+| Competition | Men's Premier League |
+| Time per over | 4.2 minutes |
+| A | 420 |
+| B | 202 |
+| C | 88 |
+| D | 0 |
+| E | 10 |
+| F | 78 |
+| G | 342 |
+| H | 81.43 |
+| I | 41 |
+
+Calculation check: H = 342 ÷ 4.2 = 81.428… overs (displayed to two decimal places as 81.43); I = ceiling(81.428… ÷ 2) = 41 overs per team. The user confirmed the competition-selection gate works after implementation.
+
+### 8.3 Competition-specific Powerplay and bowling restrictions
+
+The Development worksheet was checked against the supplied competition-specific bowling-restriction and Powerplay allocations. The implementation presents Powerplay 1, Powerplay 2 and Powerplay 3 as three separate outputs and uses the applicable innings-duration lookup. Men's Premier League shortened-innings Powerplay rules were added. The user reported the supplied Powerplay rules were correctly represented in the worksheet during iterative review.
+
+### 8.4 Deferred recommencement scenarios
+
+The recommencement scenario prototype is not accepted for this release. The user determined that its decision logic requires further consideration and that manual calculations are sufficient for the present. The settings/table are hidden in Development and must not be promoted. No acceptance claim is made for this prototype.
+
+### 8.5 Validation limitations
+
+- These Appendix A checks were manual and scenario-based.
+- The constructed scenarios do not constitute a full real-match validation of every competition rule or time boundary.
+- No automated oracle or exhaustive comparison suite exists for Appendix A.
+- The recommencement prototype is explicitly unaccepted and excluded.
+- This report records the user's test observations; it does not claim independent certification.
