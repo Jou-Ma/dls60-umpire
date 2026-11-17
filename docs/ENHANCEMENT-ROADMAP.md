@@ -101,6 +101,22 @@ Planned work:
 
 These decisions must be resolved from the supplied forms and applicable PCs. Do not assume a universal minutes-to-overs conversion or invent calculation rules.
 
+#### Recommencement-time scenario table
+
+A further time-based calculation view is required to show how changing the proposed recommencement time affects the ability to complete the minimum required overs.
+
+Agreed behaviour:
+- Retain the original entered values as the baseline; do not overwrite them when generating alternative scenarios.
+- Generate additional recommencement scenarios at 15-minute intervals.
+- For the final 15 minutes before the applicable cessation time, generate scenarios at 5-minute intervals instead.
+- Calculate the minimum-overs cut-off from the applicable cessation time less the time required to bowl the minimum overs, using the selected competition's time-per-over value.
+- A recommencement later than the calculated cut-off is a draw because the minimum overs can no longer be completed. At the cut-off itself, the minimum overs should remain achievable, subject to the applicable Playing Conditions.
+- Present the scenarios in a clear table so the umpire can compare recommencement time, time available, overs possible and the resulting minimum-overs outcome.
+
+The exact source of the cessation-time value and the source of the minimum-overs requirement must be mapped to the relevant Appendix calculation and applicable Playing Conditions before the table is connected to the live calculations. The table must not silently substitute values from a different competition or calculation context.
+
+Validation dependency: Table 4 must be tested alongside the recommencement-time view before the combined time-based workflow is considered complete.
+
 ## 3. Development and release sequence
 
 The workstreams above form the Version 2.0 roadmap. Their detailed order and build allocation will be agreed as requirements are clarified.
@@ -136,7 +152,7 @@ No Version 2.0 release date or final release build is assigned by this roadmap.
 | Titans-inspired visual refresh | Proposed; design ideas to be reviewed |
 | DLS report presentation redesign | Proposed; existing content to be retained |
 | Help section and contextual report guidance | Help tab placeholder implemented in Development; content and contextual report links remain to be designed |
-| Time-based interruption calculations | Appendix A source tables captured in the Development prototype; calculation logic and validation remain outstanding; Appendices B–D await their source forms and applicable PCs |
+| Time-based interruption calculations | Appendix A source tables and competition-specific Powerplay tables captured in Development; Table 4 testing and recommencement-time scenario table remain outstanding; Appendices B–D await their source forms and applicable PCs |
 | Version 2.0 Development implementation | Not yet started under this roadmap |
 | Production promotion | Not authorised by this roadmap |
 
