@@ -127,7 +127,7 @@ The report renderer in `app.js` generates a standalone A4 portrait HTML document
 
 The report preparer's name is captured as one optional `capturerFullName` value. Saved scenario normalization accepts the legacy `capturerFirstName` and `capturerSurname` properties and combines them when loading older scenarios. The archive record retains the established `capturedBy` object keys and adds the consolidated full-name value; the application build metadata is `1.0.2`.
 
-The Production service-worker cache namespace is `dls60-umpire-shell-v17`. The Development hosting repository has a separate cache namespace and blank archive-upload configuration; neither is copied into Production.
+The Production service-worker cache namespace is `dls60-umpire-shell-v18`. The Development hosting repository has a separate cache namespace and blank archive-upload configuration; neither is copied into Production.
 
 
 ## 13. Worksheet interface — Build 1.0.2
@@ -135,3 +135,8 @@ The Production service-worker cache namespace is `dls60-umpire-shell-v17`. The D
 The Production worksheet interface is aligned with the approved Development layout. Match type selection is isolated in Match Setup; innings scores and interruption entries are grouped by innings; second-innings overs are derived automatically from the first-innings allocation and interruption records; and penalty runs are captured in one field. General Calculate/status/error controls have been removed while field-level validation and automatic recalculation remain.
 
 The visible recommencement-scenario feature is excluded from Production and remains deferred. The Production archive upload configuration is preserved separately from the Development hosting configuration.
+
+
+## 14. Match report format-line correction — Build 1.0.3
+
+The report renderer removes a previously embedded minimum-overs suffix from the match-type label before appending the separately captured minimum-overs value. This prevents duplicate wording for preset and custom match types. No calculation or saved-data logic is affected. Production cache namespace: `dls60-umpire-shell-v18`.
