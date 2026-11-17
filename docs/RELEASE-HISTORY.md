@@ -676,3 +676,18 @@ The user stated that completion of the release documentation was the condition f
 **Validation:** Static source checks passed for the updated form, report, blank interruption rows, Production archive configuration, blue Production branding and cache v17. No automated browser interaction or PDF-rendering test was performed by the developer. Production smoke testing remains required.
 
 **Production release:** Version 2.0 · Build 1.0.2.
+
+
+### Build 1.0.3 — Match report format-line correction
+
+**Date:** 17 November 2026  
+**Product version:** 2.0  
+**Status:** Approved for Production.
+
+**Correction:** Removed the duplicate minimum-overs phrase from the report's Format line. The match-type label is normalised before the separately captured minimum-overs requirement is appended, so preset and custom formats display the minimum once.
+
+**Calculation impact:** None. DLS calculations, Appendix A, worksheet inputs and saved-match data are unchanged.
+
+**Validation:** The project owner confirmed the correction works in Development. Production source inspection confirms the report uses the same corrected renderer. The Production service-worker cache is advanced to `dls60-umpire-shell-v18`. Browser/PDF rendering smoke testing remains a post-publication check.
+
+**Production release:** Version 2.0 · Build 1.0.3.
