@@ -155,7 +155,7 @@ The correction requires a competition selection before any calculation input can
 | H | 81.43 |
 | I | 41 |
 
-Calculation check: H = 342 ÷ 4.2 = 81.428… (displayed to two decimal places as 81.43); I = ceiling(81.428… ÷ 2) = 41. The user confirmed the competition-selection gate works after implementation.
+Calculation check: H = 342 ÷ 4.2 = 81.428… overs (displayed to two decimal places as 81.43); I = ceiling(81.428… ÷ 2) = 41 overs per team. The user confirmed the competition-selection gate works after implementation.
 
 ### 8.3 Competition-specific Powerplay and bowling restrictions
 
