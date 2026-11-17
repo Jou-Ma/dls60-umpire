@@ -1,15 +1,15 @@
-# DLS 6.0 Umpire Calculator — Version 1.0
+# DLS 6.0 Umpire Calculator — Version 2.0
 
-**Release:** Version 1.0  
-**Included build:** 0.5.4  
+**Release:** Version 2.0  
+**Included build:** 1.0.0  
 **Calculation model:** DLS 6.0  
 **Application type:** Offline-first Progressive Web App (PWA)
 
 A responsive umpire calculator for DLS 6.0 match scenarios. The application runs its calculations locally in the browser and can be installed on supported desktop and mobile devices.
 
-## Version 1.0 release scope
+## Version 2.0 release scope
 
-Version 1.0 establishes the first formal product release from the tested Build 0.5.4 baseline. It includes the functionality described below; it does not claim exhaustive validation of every possible DLS input combination.
+Version 2.0 builds on the Version 1.0 DLS calculator and adds the Appendix A umpire calculation worksheets described below. The DLS calculation engine remains based on the previously released Build 0.5.4 baseline; this release does not claim exhaustive validation of every possible DLS input combination.
 
 ### Calculator
 - Match selector for ODI, T20, Other presets and Custom match formats.
@@ -42,9 +42,9 @@ Open the app online at least once so the service worker can cache the applicatio
 
 Saved matches are device/browser-local unless uploaded to the separately configured private archive. Installing the PWA on another device does not automatically transfer local records.
 
-## Validation summary
+## Appendix A — umpire calculation worksheets\n\nThe application provides three top-level tabs: **DLS 6.0**, **Appendix A** and **Help**. Appendix A contains four linked worksheets:\n\n- **Table 1:** first-innings delay/interruption and revised playing time, overs and cessation times.\n- **Table 2:** restart/cut-off comparison to determine whether the first innings can continue or should be terminated.\n- **Table 3:** second-innings allocation and scheduled cessation following first-innings termination.\n- **Table 4:** second-innings interruption, elapsed time, overs lost and amended cessation. A restart time earlier than the interruption start is rejected and dependent outputs are cleared.\n\nThe competition selector is mandatory before any worksheet values can be entered. The configured time-per-over values are T20 (4.25 minutes), Promotion League 45 (3.75), Women's League 35 (3.75), Women's T20 (3.75) and Men's Premier League (4.2). **Other** requires a valid positive custom value.\n\nAppendix A also provides a bowling-restriction lookup and separate Powerplay 1, Powerplay 2 and Powerplay 3 outputs. Competition-specific allocations are used where supplied, including shortened-innings Men's Premier League allocations. Confirm the relevant competition playing conditions before use.\n\nRecommencement Settings and Recommencement Scenarios are deferred and are not included in Version 2.0.\n\n## Validation summary
 
-The Build 0.5.4 release candidate was tested by the project owner against selected outputs from the supplied official DLS 6.0 application/JAR.
+The DLS engine baseline (Build 0.5.4, included in Version 1.0) was tested by the project owner against selected outputs from the supplied official DLS 6.0 application/JAR. Appendix A was separately tested manually in Development before promotion to Version 2.0.
 
 Recorded checks include:
 - Ten reference target scenarios.
