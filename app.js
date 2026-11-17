@@ -174,8 +174,7 @@ $('secondOvers').addEventListener('input', handleCoreInputChange);
 $('minOversPerSide').addEventListener('input', handleCoreInputChange);
 $('penaltyRuns').addEventListener('input', handleCoreInputChange);
 $('matchName').addEventListener('input', handleCoreInputChange);
-$('reportCapturerFirstName').addEventListener('input', handleCoreInputChange);
-$('reportCapturerSurname').addEventListener('input', handleCoreInputChange);
+$('reportCapturerFullName').addEventListener('input', handleCoreInputChange);
 
 function applyMatchType(type, { presetOvers = true, preserveOtherMinimum = false } = {}) {
   const preset = MATCH_TYPES[type];
@@ -431,9 +430,8 @@ function collectInput() {
   const minOversPerSide = Number($('minOversPerSide').value);
   return {
     matchName: $('matchName').value.trim(),
-    capturerFirstName: $('reportCapturerFirstName').value.trim() || 'Name',
-    capturerSurname: $('reportCapturerSurname').value.trim() || 'Surname',
-    capturedBy: `${$('reportCapturerFirstName').value.trim() || 'Name'} ${$('reportCapturerSurname').value.trim() || 'Surname'}`,
+    capturerFullName: $('reportCapturerFullName').value.trim(),
+    capturedBy: $('reportCapturerFullName').value.trim(),
     matchType: $('matchType').value,
     matchTypeLabel: currentMatchTypeLabel(),
     minOversPerSide,
@@ -582,8 +580,7 @@ $('resetButton').addEventListener('click', () => {
   suspendAutoCalculation = true;
   validationStarted = false;
   $('matchName').value = '';
-  $('reportCapturerFirstName').value = 'Name';
-  $('reportCapturerSurname').value = 'Surname';
+  $('reportCapturerFullName').value = '';
   $('matchType').value = '';
   previousMatchType = '';
   $('firstOvers').value = '';
@@ -686,30 +683,113 @@ function createReportHtml() {
   if (!currentInput || !currentResult) throw new Error('Calculate a match first.');
   const readiness = getReportReadiness();
   if (!readiness.eligible) throw new Error(readiness.message);
+
   const finalRuns = readiness.finalRuns;
   const wicketsLost = readiness.wicketsLost;
-  const finalOvers = $('secondFinalOvers').value.trim();
+  const finalOvers = readiness.finalOvers == null ? '' : formatOvers(readiness.finalOvers);
   const competition = $('reportCompetition').value.trim() || '—';
   const team1 = $('reportFirstTeam').value.trim() || 'Team batting first';
   const team2 = $('reportSecondTeam').value.trim() || 'Team batting second';
   const venue = $('reportVenue').value.trim() || '—';
   const dateValue = $('reportDate').value;
-  const matchDate = dateValue ? new Date(`${dateValue}T12:00:00`).toLocaleDateString('en-ZA', { day:'2-digit', month:'short', year:'numeric' }) : new Date().toLocaleDateString('en-ZA', { day:'2-digit', month:'short', year:'numeric' });
-  const capturedBy = `${$('reportCapturerFirstName').value.trim() || 'Name'} ${$('reportCapturerSurname').value.trim() || 'Surname'}`;
+  const matchDate = dateValue
+    ? new Date(`${dateValue}T12:00:00`).toLocaleDateString('en-ZA', { day:'numeric', month:'short', year:'numeric' })
+    : new Date().toLocaleDateString('en-ZA', { day:'numeric', month:'short', year:'numeric' });
+  const capturedBy = currentInput.capturerFullName || currentInput.capturedBy ||
+    `${currentInput.capturerFirstName === 'Name' ? '' : (currentInput.capturerFirstName || '')} ${currentInput.capturerSurname === 'Surname' ? '' : (currentInput.capturerSurname || '')}`.trim();
   const resultText = describeReportOutcome({ result: currentResult, finalRuns, wicketsLost, chasingTeam: team2, defendingTeam: team1 });
   const matchTitle = currentInput.matchName || `${team1} vs ${team2}`;
-  const firstTable = reportEventRows(currentInput.firstEvents);
-  const secondTable = reportEventRows(currentInput.secondEvents);
-  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>DLS Match Report - ${escapeHtml(matchTitle)}</title><style>
-    *{box-sizing:border-box}body{font:14px/1.5 Arial,sans-serif;color:#17263d;margin:0;background:#eef2f7}.page{max-width:900px;margin:24px auto;background:#fff;padding:38px 44px;box-shadow:0 8px 28px #12243a18}.top{border-bottom:3px solid #17395f;padding-bottom:18px;margin-bottom:22px}.eyebrow{font-size:11px;letter-spacing:.13em;color:#38649a;font-weight:bold;text-transform:uppercase}.top h1{font-size:27px;margin:5px 0;color:#132b49}.sub{color:#64748b}.meta,.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:18px 0}.tile{border:1px solid #dbe3ed;border-radius:8px;padding:11px}.tile small{display:block;color:#718096;font-size:10px;text-transform:uppercase;font-weight:bold}.tile strong{display:block;font-size:16px;margin-top:4px}.section{margin:22px 0}.section h2{font-size:16px;color:#18385f;border-bottom:1px solid #dbe3ed;padding-bottom:7px}.callout{background:#edf5ff;border-left:4px solid #2a65ac;padding:14px 16px;margin:16px 0}.callout strong{font-size:18px}.result{background:#edf8f1;border-left:4px solid #258354;padding:14px 16px;margin:16px 0}.result strong{color:#17603f}table{width:100%;border-collapse:collapse;font-size:12px;margin-top:10px}th,td{text-align:left;padding:8px;border:1px solid #dbe3ed}th{background:#f0f4f8;color:#354a66}.foot{border-top:1px solid #dbe3ed;margin-top:30px;padding-top:12px;font-size:10px;color:#77869a}.actions{display:flex;gap:10px;justify-content:flex-end;margin:0 auto 18px;max-width:900px}.actions button{background:#245ea9;color:#fff;border:0;border-radius:7px;padding:10px 15px;font-weight:bold;cursor:pointer}@media(max-width:620px){.page{margin:0;padding:22px 16px}.meta,.stats{grid-template-columns:1fr 1fr}.actions{padding:12px;justify-content:stretch}.actions button{flex:1}}@media print{body{background:#fff}.page{box-shadow:none;margin:0 auto;padding:10mm;max-width:none}.actions{display:none}.section,.callout,.result{break-inside:avoid}}
-    </style></head><body><div class="actions"><button onclick="window.print()">Print / Save as PDF</button></div><main class="page"><header class="top"><div class="eyebrow">DLS 6.0 · Match report</div><h1>${escapeHtml(matchTitle)}</h1><div class="sub">${escapeHtml(competition)} · ${escapeHtml(venue)} · ${escapeHtml(matchDate)}</div></header>
-    <div class="meta"><div class="tile"><small>Captured by</small><strong>${escapeHtml(capturedBy)}</strong></div><div class="tile"><small>Match format</small><strong>${escapeHtml(currentInput.matchTypeLabel)}</strong></div><div class="tile"><small>Minimum overs per side</small><strong>${currentInput.minOversPerSide}</strong></div><div class="tile"><small>Overs at start</small><strong>${escapeHtml(formatOvers(currentInput.firstOvers))}</strong></div></div>
-    <section class="section"><h2>First innings — ${escapeHtml(team1)}</h2><div class="stats"><div class="tile"><small>Final score</small><strong>${currentInput.firstRuns}</strong></div><div class="tile"><small>Scheduled overs</small><strong>${escapeHtml(formatOvers(currentInput.firstOvers))}</strong></div><div class="tile"><small>Overs lost</small><strong>${escapeHtml(prettyOvers(currentResult.firstResourcesLost))}</strong></div><div class="tile"><small>Overs available</small><strong>${escapeHtml(prettyOvers(currentResult.firstRemainingOvers))}</strong></div></div><h3>Interruption record</h3><table><thead><tr><th>#</th><th>Overs bowled</th><th>Score</th><th>Wickets</th><th>Overs lost</th></tr></thead><tbody>${firstTable}</tbody></table></section>
-    <section class="section"><h2>Second innings — ${escapeHtml(team2)}</h2><div class="stats"><div class="tile"><small>Target</small><strong>${currentResult.target}</strong></div><div class="tile"><small>Final score</small><strong>${finalRuns}${wicketsLost == null ? '' : `/${wicketsLost}`}</strong></div><div class="tile"><small>Overs at finish</small><strong>${escapeHtml(finalOvers || 'Not entered')}</strong></div></div><p>Overs allocated at start of chase: <strong>${escapeHtml(formatOvers(currentInput.secondOvers))}</strong>. Second-innings overs lost: <strong>${escapeHtml(prettyOvers(currentResult.secondResourcesLost))}</strong>. Revised chase length: <strong>${escapeHtml(currentResult.finalSecondOvers)}</strong>.</p><h3>Interruption record</h3><table><thead><tr><th>#</th><th>Overs bowled</th><th>Score</th><th>Wickets</th><th>Overs lost</th></tr></thead><tbody>${secondTable}</tbody></table></section>
-    <div class="callout"><div>Revised DLS target</div><strong>${currentResult.target} runs</strong></div><div class="result"><strong>RESULT</strong><br>${escapeHtml(resultText)}</div>
-    <footer class="foot">Generated locally by the private DLS 6.0 Umpire Calculator. This report is a user-generated calculation summary, not an ICC-issued or certified match report. Verify official match decisions against the authorised DLS application and applicable playing conditions.</footer></main></body></html>`;
-}
+  const firstEvents = Array.isArray(currentInput.firstEvents) ? currentInput.firstEvents : [];
+  const secondEvents = Array.isArray(currentInput.secondEvents) ? currentInput.secondEvents : [];
+  const firstTable = firstEvents.length ? `
+    <div class="event-block">
+      <div class="event-heading">First-innings interruption record</div>
+      <table><thead><tr><th>#</th><th>Overs</th><th>Score</th><th>Wickets</th><th>Overs lost</th></tr></thead><tbody>${reportEventRows(firstEvents)}</tbody></table>
+    </div>` : '';
+  const secondTable = secondEvents.length ? `
+    <div class="event-block">
+      <div class="event-heading">Second-innings interruption record</div>
+      <table><thead><tr><th>#</th><th>Overs</th><th>Score</th><th>Wickets</th><th>Overs lost</th></tr></thead><tbody>${reportEventRows(secondEvents)}</tbody></table>
+    </div>` : '';
+  const penaltyRuns = Number(currentInput.penaltyRuns || 0);
+  const firstOvers = formatOvers(currentInput.firstOvers);
+  const secondStartOvers = formatOvers(currentInput.secondOvers);
+  const firstAvailable = prettyOvers(currentResult.firstRemainingOvers);
+  const revisedOvers = formatOvers(currentResult.finalSecondOvers);
 
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>DLS Match Report - ${escapeHtml(matchTitle)}</title><style>
+    *{box-sizing:border-box}
+    @page{size:A4 portrait;margin:12mm}
+    html,body{margin:0;padding:0;background:#fff;color:#1c2735}
+    body{font:10.5pt/1.38 Arial,Helvetica,sans-serif}
+    .page{width:100%;max-width:186mm;margin:0 auto;padding:0}
+    .top{padding:0 0 4mm;margin:0 0 4mm;border-bottom:2px solid #17395f}
+    .eyebrow{font-size:8pt;letter-spacing:.14em;color:#38649a;font-weight:700;text-transform:uppercase}
+    h1{font-size:21pt;line-height:1.12;margin:1.5mm 0 2mm;color:#132b49;font-weight:700}
+    .sub{font-size:9.5pt;color:#53657b}
+    .match-facts{display:flex;flex-wrap:wrap;gap:1.5mm 7mm;padding:0 0 3mm;margin:0 0 3mm;border-bottom:1px solid #d9e0e8;font-size:9pt}
+    .match-facts span{white-space:nowrap}
+    .match-facts strong{color:#253c59}
+    .innings{margin:0 0 4mm}
+    .innings h2{font-size:12pt;line-height:1.2;color:#17395f;margin:0 0 2mm;padding:0 0 1.5mm;border-bottom:1px solid #cbd5e1}
+    .narrative{margin:0 0 1.8mm}
+    .narrative strong{color:#172b45}
+    .detail-line{margin:0;color:#53657b;font-size:9pt}
+    .detail-line strong{color:#334a66;font-weight:700}
+    .event-block{margin:2.5mm 0 0}
+    .event-heading{font-size:8pt;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#5b6c80;margin:0 0 1mm}
+    table{width:100%;border-collapse:collapse;font-size:8.5pt;margin:0}
+    th,td{padding:1.2mm 2mm;text-align:left;border-bottom:1px solid #dce3eb}
+    th{background:#f1f4f7;color:#43546a;font-size:7.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+    td:first-child,th:first-child{width:8mm;text-align:center}
+    td:nth-child(n+3),th:nth-child(n+3){text-align:center}
+    .target-result{margin:3mm 0 0;padding:3mm 0;border-top:2px solid #17395f;border-bottom:1px solid #cbd5e1}
+    .target-label{font-size:8pt;text-transform:uppercase;letter-spacing:.1em;font-weight:700;color:#536b89}
+    .target-value{font-size:21pt;line-height:1.1;font-weight:700;color:#132b49;margin:1mm 0}
+    .target-note{font-size:9pt;color:#53657b}
+    .result{margin:3mm 0 0;font-size:12pt;font-weight:700;color:#17395f}
+    .result-label{display:block;margin-bottom:1mm;font-size:8pt;letter-spacing:.1em;text-transform:uppercase;color:#65758a}
+    .foot{margin:5mm 0 0;padding:2.5mm 0 0;border-top:1px solid #d9e0e8;font-size:7.5pt;line-height:1.35;color:#788596}
+    .captured{font-size:8pt;color:#53657b;margin-top:1.5mm}
+    @media screen{body{background:#e9edf2;padding:12mm 0}.page{background:#fff;min-height:273mm;padding:12mm;box-shadow:0 2mm 8mm #17263d18}}
+    @media print{body{background:#fff}.page{max-width:none;min-height:0;padding:0}.innings,.target-result,.result,.event-block{break-inside:avoid} .foot{margin-top:4mm}}
+  </style></head><body><main class="page">
+    <header class="top">
+      <div class="eyebrow">DLS 6.0 · Match report</div>
+      <h1>${escapeHtml(matchTitle)}</h1>
+      <div class="sub">${escapeHtml(competition)} &nbsp;·&nbsp; ${escapeHtml(venue)} &nbsp;·&nbsp; ${escapeHtml(matchDate)}</div>
+    </header>
+    <div class="match-facts">
+      <span><strong>Format:</strong> ${escapeHtml(currentInput.matchTypeLabel)}; minimum ${currentInput.minOversPerSide} overs per side</span>
+    </div>
+
+    <section class="innings">
+      <h2>First innings — ${escapeHtml(team1)}</h2>
+      <p class="narrative"><strong>${escapeHtml(team1)}</strong> ${currentInput.firstRuns} from ${escapeHtml(firstAvailable)} overs.</p>
+      ${firstTable}
+      <p class="detail-line"><strong>1st Innings Available Overs:</strong> ${escapeHtml(firstAvailable)} overs</p>
+    </section>
+
+    <section class="innings">
+      <h2>Second innings — ${escapeHtml(team2)}</h2>
+      <p class="narrative"><strong>${escapeHtml(team2)}</strong> ${finalRuns}${wicketsLost == null ? '' : `/${wicketsLost}`} from ${escapeHtml(finalOvers || revisedOvers)} overs.</p>
+      ${secondTable}
+      <p class="detail-line"><strong>2nd Innings Available Overs:</strong> ${escapeHtml(revisedOvers)} overs</p>
+      <p class="detail-line">Penalty runs to ${escapeHtml(team1)} while ${escapeHtml(team2)} batted: <strong>${penaltyRuns}</strong></p>
+    </section>
+
+    <section class="target-result">
+      <div class="target-label">Revised DLS target</div>
+      <div class="target-value">${currentResult.target} runs</div>
+      <div class="target-note">Penalty runs, if any, are included in the target.</div>
+    </section>
+    <div class="result"><span class="result-label">Result</span>${escapeHtml(resultText)}</div>
+    <footer class="foot">
+      Generated locally by the private DLS 6.0 Umpire Calculator. This is a user-generated calculation summary, not an ICC-issued or certified match report. Verify official match decisions against the authorised DLS application and applicable playing conditions.
+      ${capturedBy ? `<div class="captured">Report prepared by: ${escapeHtml(capturedBy)}</div>` : ''}
+    </footer>
+  </main></body></html>`;
+}
 $('createMatchReport').addEventListener('click', () => {
   try {
     const html = createReportHtml();
@@ -758,7 +838,8 @@ function renderSaved() {
     const info = document.createElement('div');
     const title = document.createElement('strong'); title.textContent = item.input.matchName || 'Unnamed match';
     const detail = document.createElement('small');
-    const capturer = item.input.capturerFirstName || item.input.capturerSurname ? `Captured by ${`${item.input.capturerFirstName || ''} ${item.input.capturerSurname || ''}`.trim()} · ` : 'Capturer name required · ';
+    const savedCapturer = item.input.capturerFullName || item.input.capturedBy || `${item.input.capturerFirstName === 'Name' ? '' : (item.input.capturerFirstName || '')} ${item.input.capturerSurname === 'Surname' ? '' : (item.input.capturerSurname || '')}`.trim();
+    const capturer = savedCapturer ? `Captured by ${savedCapturer} · ` : 'Capturer name not entered · ';
     const uploadLabel = item.uploadStatus === 'uploaded' ? 'Uploaded' : item.uploadStatus === 'error' ? 'Upload failed — retry pending' : 'Pending upload';
     detail.textContent = `${capturer}${item.input.matchTypeLabel || item.input.matchType || 'Match'} · ${item.input.firstRuns} runs · ${item.summary.noResult ? 'No result' : `target ${item.summary.target}`} · ${uploadLabel} · ${new Date(item.savedAt).toLocaleString()}`;
     info.append(title, detail);
@@ -849,9 +930,8 @@ $('syncNow').addEventListener('click', () => uploadPendingMatches());
 function inputFromUiRaw(input) {
   return {
     matchName: input.matchName || '',
-    capturerFirstName: input.capturerFirstName || 'Name',
-    capturerSurname: input.capturerSurname || 'Surname',
-    capturedBy: input.capturedBy || `${input.capturerFirstName || 'Name'} ${input.capturerSurname || 'Surname'}`.trim(),
+    capturerFullName: input.capturerFullName || input.capturedBy || `${input.capturerFirstName === 'Name' ? '' : (input.capturerFirstName || '')} ${input.capturerSurname === 'Surname' ? '' : (input.capturerSurname || '')}`.trim(),
+    capturedBy: input.capturedBy || input.capturerFullName || `${input.capturerFirstName === 'Name' ? '' : (input.capturerFirstName || '')} ${input.capturerSurname === 'Surname' ? '' : (input.capturerSurname || '')}`.trim(),
     matchType: input.matchType || 'odi',
     matchTypeLabel: input.matchTypeLabel || '',
     minOversPerSide: input.minOversPerSide ?? 20,
@@ -873,8 +953,7 @@ function loadScenario(input) {
   previousMatchType = $('matchType').value;
   applyMatchType(matchType, { presetOvers: false, preserveOtherMinimum: true });
   $('matchName').value = input.matchName || '';
-  $('reportCapturerFirstName').value = input.capturerFirstName || 'Name';
-  $('reportCapturerSurname').value = input.capturerSurname || 'Surname';
+  $('reportCapturerFullName').value = input.capturerFullName || input.capturedBy || `${input.capturerFirstName === 'Name' ? '' : (input.capturerFirstName || '')} ${input.capturerSurname === 'Surname' ? '' : (input.capturerSurname || '')}`.trim();
   $('firstOvers').value = input.firstOvers;
   $('firstRuns').value = input.firstRuns;
   $('minOversPerSide').value = input.minOversPerSide ?? (MATCH_TYPES[matchType]?.minOvers ?? '');
@@ -900,8 +979,7 @@ function loadScenario(input) {
     secondTeam: $('reportSecondTeam').value.trim(),
     venue: $('reportVenue').value.trim(),
     matchDate: $('reportDate').value || null,
-    capturerFirstName: $('reportCapturerFirstName').value.trim() || 'Name',
-    capturerSurname: $('reportCapturerSurname').value.trim() || 'Surname',
+    capturerFullName: $('reportCapturerFullName').value.trim(),
     reportReady: getReportReadiness().eligible,
     reportOutcomeCode: getReportReadiness().code || null
   };
