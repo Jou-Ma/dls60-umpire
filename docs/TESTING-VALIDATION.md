@@ -1,7 +1,7 @@
 # DLS Umpire Calculator — Testing & Validation Report
 
 **Document status:** Ongoing validation record  
-**Production baseline:** Version 2.0 · Build 1.0.0  
+**Production baseline:** Version 2.0 · Build 1.0.1  
 **Previous DLS engine baseline:** Version 1.0 · Build 0.5.4  
 **Calculation standard:** ICC DLS 6.0
 
@@ -172,3 +172,22 @@ The recommencement scenario prototype is not accepted for this release. The user
 - No automated oracle or exhaustive comparison suite exists for Appendix A.
 - The recommencement prototype is explicitly unaccepted and excluded.
 - This report records the user's test observations; it does not claim independent certification.
+
+
+## 9. Version 2.0 · Build 1.0.1 — Match report presentation
+
+**Environment:** Development  
+**Tester/reviewer:** Project owner  
+**Method:** Review of the generated match report and source-level checks.
+
+| Area | Validation | Recorded result |
+|---|---|---|
+| Report layout | A4 portrait, chronological narrative, retained header and result | Project owner approved the layout as intuitive and easy to read |
+| Match facts | Format and minimum overs combined into one line | Confirmed in the accepted Development report |
+| Innings detail | First- and second-innings narrative and available-overs lines | Confirmed in the accepted Development report |
+| Interruption records | Tables rendered only when the innings has interruption entries | Confirmed by source inspection; browser rendering not independently automated |
+| Capturer identity | Single full-name input and discreet report footer | Included in the Production promotion |
+| Saved scenarios | Legacy first-name/surname values normalized when loaded | Source compatibility path retained |
+| Calculation engine | DLS target and resource calculation | Unchanged by this build |
+
+**Limitations:** No automated browser test or PDF-rendering regression test was performed by the developer. The project owner's visual acceptance was performed in Development. Production browser/PWA smoke testing remains outstanding after publication.
