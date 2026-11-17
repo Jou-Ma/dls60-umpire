@@ -211,3 +211,17 @@ The recommencement scenario prototype is not accepted for this release. The user
 | Deferred scope | Recommencement scenarios excluded |
 
 **Result:** All listed source-level checks passed before the Production update. No automated browser or PDF-rendering regression test was run by the developer. A Production smoke test is still required.
+
+
+## 11. Version 2.0 · Build 1.0.3 — Report format-line correction
+
+| Area | Validation |
+|---|---|
+| Format line | Removes any existing minimum-overs suffix from the match-type label before appending the captured minimum once |
+| Preset format | ODI-style label retains scheduled overs and displays minimum overs once |
+| Custom format | Custom label retains scheduled overs and displays minimum overs once |
+| Calculation engine | Unchanged |
+| Development acceptance | Project owner confirmed the correction works as expected |
+| Production cache | Advanced to `dls60-umpire-shell-v18` |
+
+**Limitations:** No automated browser or PDF-rendering test was run by the developer. A Production smoke test remains required after publication.
