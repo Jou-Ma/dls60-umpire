@@ -160,21 +160,21 @@
       <div class="panel-heading"><div><div class="step-label">LOCAL STORAGE</div><h2>Saved matches</h2><p class="panel-hint">Stored only in this browser on this device.</p></div><button id="clearSaved" class="button button-quiet" type="button">Clear saved</button></div>
       <div id="savedList" class="saved-list"><div class="empty-events">No saved matches yet.</div></div>
       <div class="upload-box">
-        <div class="upload-box-heading"><div><strong>Development mode · local records only</strong><p class="panel-hint">Development copy: saved matches remain on this device. Private archive uploads are disabled.</p></div><span id="uploadQueueBadge" class="tag">0 pending</span></div>
-        <div class="upload-actions"><p id="uploadStatus" class="upload-status" role="status" aria-live="polite">Development copy: matches are saved on this device only. Private archive uploads are disabled.</p><button id="syncNow" class="button button-primary" type="button">Uploads disabled</button></div>
+        <div class="upload-box-heading"><div><strong>Private match archive</strong><p class="panel-hint">Saved matches remain on this device until they are uploaded to the private archive.</p></div><span id="uploadQueueBadge" class="tag">0 pending</span></div>
+        <div class="upload-actions"><p id="uploadStatus" class="upload-status" role="status" aria-live="polite">Matches save on this device and upload automatically when an internet connection is available.</p><button id="syncNow" class="button button-primary" type="button">Sync now</button></div>
       </div>
     </section>
 
     <section class="disclaimer">
-      <strong>DEVELOPMENT ENVIRONMENT:</strong> Based on Version 1.0 · Build 0.5.4. The browser engine has been compared with selected outputs from the supplied ICC DLS 6.0 application, including multi-interruption cases and over-by-over / ball-by-ball tables. These are targeted validation scenarios, not exhaustive verification of every possible input combination. For official match decisions, use the authorised DLS application and follow the applicable playing conditions.
+      <strong>Release status:</strong> Version 2.0 · Build 1.0.2. Includes the approved A4 narrative match report and streamlined automatic-calculation worksheet. The browser engine has been compared with selected outputs from the supplied ICC DLS 6.0 application, including multi-interruption cases and over-by-over / ball-by-ball tables. These are targeted validation scenarios, not exhaustive verification of every possible input combination. For official match decisions, use the authorised DLS application and follow the applicable playing conditions.
       <p>DLS is proprietary. This independent tool is not an ICC product and is not certified, endorsed or approved by the ICC. No official DLS software or JAR is distributed with this application.</p>
     </section>
     </section>
 
     <section class="app-tab-panel" id="tab-a" role="tabpanel" aria-labelledby="tab-button-a" hidden>
       <div class="appendix-heading">
-        <div><div class="step-label">TIME-BASED CALCULATIONS</div><h1>Over Calcs</h1><p class="panel-hint">Time-based calculation sheets for delays and interruptions. Enter the relevant inputs; calculated fields update automatically. Use this tab only when the applicable match conditions require these time-based calculations.</p></div>
-        <div class="appendix-heading-actions"><span class="tag">Draft layout</span><button class="button button-secondary" id="resetAppendixA" type="button">Reset Over Calcs</button></div>
+        <div><div class="step-label">TIME-BASED CALCULATIONS</div><h1>Appendix A</h1><p class="panel-hint">Time-based calculation sheets for delays and interruptions. Enter the relevant inputs; calculated fields update automatically. Use this tab only when the applicable match conditions require these time-based calculations.</p></div>
+        <div class="appendix-heading-actions"><span class="tag">Draft layout</span><button class="button button-secondary" id="resetAppendixA" type="button">Reset Appendix A</button></div>
       </div>
       <section class="panel over-calc-settings" aria-label="Competition settings">
         <div class="panel-heading"><div><div class="step-label">MATCH CONDITIONS</div><h2>Competition settings</h2><p class="panel-hint">Select the applicable competition / match type first. All worksheet entries remain locked until this selection sets the correct time allowance.</p></div></div>
