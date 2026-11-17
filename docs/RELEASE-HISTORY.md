@@ -623,6 +623,16 @@ The user stated that completion of the release documentation was the condition f
 
 **Files changed:** `app.js`, `index.html`, `match-record.js`, `sw.js`, release and validation documentation.
 
+**Production Git commits:**
+- `3472e253f42246b5f468e43e8058777dd8638496` — single full-name capturer field and Build 1.0.1 release label.
+- `29d1191771f659c7add88f59b8d9838ce430e121` — approved narrative report layout and legacy scenario compatibility.
+- `0ac4ee29267b8d6774cb80cd742c4353c6feb1c4` — full-name archive metadata.
+- `51a52e69e1ee3d3f2408c6d1735c587b7db9b200` — Production service-worker cache v16.
+- `1ceffd44f2fa08adcc1462697d9aab39f177f1fd` — release history update.
+- `53f300589785a27dabf0ddebe33f50a90be8861e` — validation record.
+- `ff21cf8142b050a8db8814301ae95bcf9c9dc7d3` — README update.
+- `9bdfddd48ae9faad91f4764024134e5abb2c25b4` — archive full-name validation regex correction.
+
 **Calculation impact:** No change to the DLS 6.0 calculation engine, target calculation, par-score tables or Appendix A calculations.
 
 **Validation and approval:**
