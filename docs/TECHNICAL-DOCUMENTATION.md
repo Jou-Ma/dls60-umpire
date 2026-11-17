@@ -1,9 +1,9 @@
 # DLS Umpire Calculator — Technical Documentation
 
-**Document status:** Draft structure  
-**Application baseline:** PoC Build 0.5.4  
-**Calculation standard:** ICC DLS 6.0  
-**Product version:** Not yet formally released
+**Document status:** Working technical reference; detailed implementation inventory remains in progress  
+**Production baseline:** Version 1.0 · Build 0.5.4  
+**Development target:** Version 2.0 (build identifier not assigned)  
+**Calculation standard:** ICC DLS 6.0
 
 ## 1. System overview
 - Application purpose and scope
@@ -99,3 +99,23 @@
 - Document actual endpoint responses and error cases.
 - Do not include access codes, tokens or other credentials.
 - Distinguish verified behaviour from design intent and known limitations.
+
+
+## 11. Appendix A worksheet module — Version 2.0 Development
+
+The Appendix A module is a separate umpire worksheet area and does not replace the DLS calculation engine. It contains four linked tables for playing-time and innings-restart calculations.
+
+- **Table 1:** derives effective playing time lost, remaining playing time, overs per side and revised innings/cessation times from the entered match timings and adjustments.
+- **Table 2:** compares the proposed restart time with the rescheduled cut-off and determines whether the first innings may continue or must be terminated under the worksheet rule.
+- **Table 3:** calculates the second-innings allocation and scheduled cessation when Table 2 indicates first-innings termination.
+- **Table 4:** calculates elapsed innings time, interruption duration, time lost, overs lost, adjusted maximum overs, revised innings duration and amended cessation. A restart earlier than the interruption start is rejected and dependent outputs are cleared.
+
+Competition-specific parameters are supplied through the Over Calcs competition selector. Configured time-per-over values include T20 (4.25), Promotion League 45 (3.75), Women's League 35 (3.75), Women's T20 (3.75) and Men's Premier League (4.2). Other requires a manually entered positive value. Units are minutes per over.
+
+The competition selector is a mandatory input gate. Worksheet inputs and scenario controls are disabled until a configured competition is selected or a valid custom rate is supplied for Other. This prevents calculations being attempted with an undefined time-per-over value.
+
+The bowling-restriction and Powerplay lookup exposes three outputs (Powerplay 1, Powerplay 2 and Powerplay 3). Competition-specific allocations must be sourced from the relevant competition playing conditions; no generic allocation is assumed where a rule has not been provided.
+
+**Deferred:** Recommencement Settings and Recommencement Scenarios were prototyped but are hidden and excluded from the current release scope. Their logic remains subject to further requirements analysis.
+
+**Environment separation:** The source development branch is `dev` in `Jou-Ma/dls60-umpire`. The separate Development hosting repository is `Jou-Ma/dls60-umpire-dev`. Production remains the `main` branch and the blue-header deployment. Development-only configuration must not be copied into Production, particularly the intentionally blank local archive-upload configuration in the Development hosting repository.
