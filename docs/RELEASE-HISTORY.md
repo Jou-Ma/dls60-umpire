@@ -1,11 +1,12 @@
 # DLS Umpire Calculator — Release Notes & Build History
 
 **Document status:** Living development and release record; reconstructed from project conversations and available Git history  
-**Application status:** Version 1.0 released  
-**Current build:** 0.5.4  
+**Application status:** Version 2.0 released  
+**Production baseline:** Version 2.0 · Build 1.0.0  
+**Previous release:** Version 1.0 · Build 0.5.4  
 **Calculation standard:** ICC DLS 6.0  
-**Product version:** 1.0  
-**History coverage:** Initial prototype through Build 0.5.4
+**Current product version:** 2.0  
+**History coverage:** Initial prototype through Version 2.0 release (17 November 2026)
 
 > **Record-keeping note:** The early builds (0.1.0–0.5.0) were developed and discussed in the project conversation. The GitHub repository does not preserve a complete, one-commit-per-build source history for those early iterations; some source files were uploaded in batches. Their entries below are therefore reconstructed from contemporaneous project notes and user testing, not represented as verified individual Git commits. Git commit timestamps are recorded where available. All dates are 15 November 2026 (South African local date); exact times are shown only where supported by Git commit timestamps.
 
@@ -392,6 +393,7 @@ The repository's current Git history contains reliable individual commits for th
 | Product version | Release date | Release build | Status |
 |---|---|---|---|
 | 1.0 | 15 November 2026 | 0.5.4 | Released; first formal product release |
+| 2.0 | 17 November 2026 | 1.0.0 | Released; Appendix A umpire worksheets and mandatory competition gate |
 
 ## 6. Required entry format for future builds
 
@@ -450,3 +452,153 @@ For each formal product release, record:
 - Local saved records are device/browser-specific unless uploaded to the separately configured private archive.
 
 **Release metadata:** The application footer and release-facing documentation identify the release as **Version 1.0 · Build 0.5.4 · ICC DLS 6.0**. The calculation logic remains the Build 0.5.4 implementation; the release metadata does not represent a new calculation build.
+
+
+## 8. Version 2.0 — Development record (not yet released)
+
+**Development period recorded:** 15–17 November 2026  
+**Production baseline:** Version 1.0 · Build 0.5.4  
+**Included build:** 1.0.0  
+**Calculation standard:** ICC DLS 6.0  
+**Status:** Released to Production on 17 November 2026.
+
+### 8.1 Development objectives and application navigation
+
+The Version 2.0 work began by restructuring the application into navigable sections:
+
+- **DLS 6.0** — the existing DLS calculator, retained as the primary calculator.
+- **Appendix A** — umpire calculation worksheets supporting playing-time, bowling-restriction and Powerplay calculations.
+- **Help** — supporting guidance.
+
+The unused Appendix B–D tabs were removed from the initial navigation proposal. The tab navigation was made accessible and responsive. The Development environment uses an orange header to distinguish it from the blue Production environment; the Production theme is not changed by this Development work.
+
+### 8.2 Appendix A — umpire calculation worksheets
+
+Appendix A was implemented as four linked calculation tables. The worksheets are intended to assist umpires with the manual playing-time calculations required under the applicable competition playing conditions. They do not replace the umpire's responsibility to apply those conditions and verify the inputs.
+
+**Table 1 — First-innings delay/interruption and revised playing time**
+
+The worksheet captures the available playing time, innings time already used, playing time lost, additional time and interval adjustments. It calculates effective time lost, remaining playing time, the resulting maximum overs per team, and the revised innings and cessation times. The worksheet includes the calculation of the second-innings start and cessation times.
+
+**Table 2 — Decision on whether the first innings can continue**
+
+The worksheet compares the proposed restart and the rescheduled cut-off, calculates the intervening time and potential overs, and compares those overs with the overs already faced. The result identifies whether the first innings can continue under the worksheet's decision rule or whether the first innings is terminated and Table 3 is applicable. The applicable decision outcome is visually highlighted.
+
+**Table 3 — Second-innings allocation following first-innings termination**
+
+The worksheet carries forward the overs determined by Table 2, calculates the corresponding scheduled innings duration and cessation time, and records the second-innings start time.
+
+**Table 4 — Second-innings interruption and amended cessation**
+
+The worksheet calculates elapsed innings time, interruption duration, additional time, time lost, overs lost, adjusted maximum overs, revised innings duration and amended cessation time. The elapsed innings duration is calculated automatically and is read-only. A restart time earlier than the interruption start is invalid: the worksheet displays an error and clears dependent outputs rather than continuing with an invalid duration. Reset clears the worksheet and restores the competition selector to its unselected state.
+
+### 8.3 Competition-specific time and bowling-restriction calculations
+
+The Over Calcs worksheet includes competition selection and competition-specific time-per-over values. The Development configuration recorded in the application is:
+
+| Competition | Time per over |
+|---|---:|
+| T20 | 4.25 minutes |
+| Promotion League 45 | 3.75 minutes |
+| Women's League 35 | 3.75 minutes |
+| Women's T20 | 3.75 minutes |
+| Men's Premier League | 4.2 minutes |
+| Other | User-entered positive value |
+
+The competition selection is now mandatory before any Over Calcs worksheet input can be entered. All worksheet inputs and scenario controls start disabled. Selecting a configured competition supplies its time-per-over value and unlocks the worksheet. Selecting **Other** does not unlock the worksheet until a valid positive custom time-per-over value is entered. Calculated/read-only outputs become available after the gate is satisfied.
+
+Appendix A also includes a bowling-restriction lookup and three distinct Powerplay outputs: Powerplay 1, Powerplay 2 and Powerplay 3. The lookup uses the applicable innings duration and the competition's supplied bowling-restriction allocation. Shortened-innings Powerplay allocations were added for the Men's Premier League. No generic 50-over Powerplay allocation is inferred where the applicable competition rule has not been supplied.
+
+### 8.4 Recommencement scenario enhancement — deferred and excluded
+
+A recommencement-time scenario table was prototyped in Development to show candidate restart times, time available, possible overs and whether the minimum-overs outcome could be achieved. The user concluded that the scenario logic requires further consideration and that the calculations can be performed manually in the meantime.
+
+**Release treatment:** Recommencement Settings and the Recommencement Scenarios table are a future enhancement. They are hidden in the Development interface pending further design and are expressly excluded from the current Production promotion. Their prototype code is not part of the approved release scope.
+
+### 8.5 Development validation and user acceptance
+
+The user reported that Tables 1–4 had been tested across multiple constructed scenarios to the extent possible without live match conditions and were working as expected. Table 1 had also previously been exercised in a real T20 International context. The user separately tested the mandatory match-type gate and confirmed that it was working.
+
+A defect was identified during Table 1 testing when a Premier League scenario was entered without first selecting the match type/time-per-over. The worksheet could not calculate the expected result because the time-per-over value was missing. The gate was introduced to prevent any worksheet data entry until the competition and required time-per-over value are established.
+
+**Recorded gate test case:**
+- Competition: Men's Premier League.
+- Time per over: 4.2 minutes.
+- A = 420; B = 202; C = 88; D = 0; E = 10; F = 78; G = 342.
+- H = G ÷ 4.2 = 81.43 overs (displayed to two decimal places).
+- I = ceiling(H ÷ 2) = 41 overs per team.
+
+The user confirmed that the revised gate works. This scenario is recorded as a control/validation example; it is not represented as a full independent test suite.
+
+### 8.6 Source and deployment record
+
+The application source changes for the initial Version 2.0 navigation and Appendix A structure were committed to the `dev` branch of `Jou-Ma/dls60-umpire`. The separately hosted Development application is maintained in `Jou-Ma/dls60-umpire-dev`, branch `main`. Development hosting changes include the Appendix A worksheets, competition-specific rules, Table 4 validation, recommencement prototype and the mandatory competition-selection gate.
+
+Representative source-repository commits:
+- `64c9d93d9152` — V2 tab navigation and Appendix A prototype.
+- `e5b19307c52b` — enable application tab navigation.
+- `7c8e9ecb79a3` / `7fb58d3f1702` — Version 2.0 enhancement roadmap.
+- `991a5df459fd` — record initial V2 tab and Appendix A prototype status.
+- `51b8f98a6f56` — document recommencement-time scenario prototype.
+
+Representative Development-hosting commits:
+- `ac24b580f93e` — competition-specific time-per-over settings.
+- `7dcab9b77cd6` / `78fa1fd6f4e6` — competition-specific Powerplay calculations and Men's Premier League shortened-innings Powerplays.
+- `549fbda8099e` — automatic Appendix A formula calculations.
+- `44f64fc3468b` / `88ede9964589` — three Powerplay outputs and lookup.
+- `33c3b6ec2976` / `d1e1bb8afe57` — Table 4 elapsed-time calculation and restart validation.
+- `ee72830116be` — reset competition selection.
+- `4680f1f0a103` — recommencement scenario prototype.
+- `05034e4f1fe7` / `b42388bb2668` / `2fc2fb3e0163` — mandatory competition gate and valid custom-rate handling.
+- `9a9dc53e29ed` — hide recommencement scenarios pending future enhancement.
+
+The Development hosting service-worker cache was advanced as required during the iterations. The latest hidden-scenario update uses the Development cache namespace v20. The Production service-worker cache was advanced from v14 to v15 during promotion. Production remains blue-themed and retains its existing private archive upload configuration; the blank local-only upload configuration from the Development hosting repository was not copied into Production.
+
+**Production promotion commits (17 November 2026):**
+- `0bc05ebd2adb` — Version 2.0 · Build 1.0.0 interface and tabs.
+- `7e3e5b96ae6f` — Appendix A calculations and mandatory competition gate, with recommencement code excluded.
+- `6722479b7a55` — Production tab and worksheet styling.
+- `8375211becf8` — saved-match build metadata updated to 1.0.0.
+- `4d62acb1320d` — Production service-worker cache v15.
+
+### 8.7 Proposed Production promotion boundary
+
+The approved and promoted Version 2.0 scope includes the completed tab navigation, Appendix A Tables 1–4, competition-specific time-per-over selection, bowling-restriction and Powerplay calculations, Table 4 validation and the mandatory competition-selection gate.
+
+The following are not included:
+- Recommencement Settings or Recommencement Scenarios.
+- Any unassigned or untested future enhancement.
+- Any change to the DLS 6.0 calculation engine unless separately documented and approved.
+
+The Production release must retain the Production blue header and its existing private archive configuration. The Development hosting repository's blank local-only upload configuration must not be copied over the Production configuration. Production is now identified as Version 2.0 · Build 1.0.0. The Version 1.0 · Build 0.5.4 release remains the previous formal release baseline.
+
+### 8.8 Release approval record
+
+The user stated that completion of the release documentation is the condition for approving this promotion and that, once completed, the release is approved. This documentation update satisfies that condition; the user's explicit release approval therefore applies to the proposed scope in section 8.7. This entry does not fabricate a signature or a separately signed form. The final release record must still be completed with the actual promotion commit, release identifier, deployment verification and release date after those actions occur.
+
+
+### Version 2.0 — Appendix A umpire calculation worksheets
+
+**Release date:** 17 November 2026  
+**Included build:** 1.0.0  
+**Calculation standard:** ICC DLS 6.0  
+**Previous release:** Version 1.0 · Build 0.5.4
+
+**Release decision:** Approved by the project owner after completion of the release documentation, as expressly stated in the project conversation. The approved scope is the Production promotion boundary in section 8.7.
+
+**Included functionality:**
+- Accessible top-level navigation for DLS 6.0, Appendix A and Help.
+- Appendix A Tables 1–4 for playing-time, first-innings continuation/termination, second-innings allocation and second-innings interruption calculations.
+- Competition-specific time-per-over settings.
+- Mandatory competition/match-type selection before worksheet entry; Other requires a valid positive custom rate.
+- Bowling-restriction lookup and three separate Powerplay outputs (Powerplay 1, Powerplay 2 and Powerplay 3), including the supplied shortened-innings Men's Premier League allocations.
+- Table 4 restart-time validation and worksheet reset behaviour.
+- Production blue theme and existing private match-archive upload configuration retained.
+
+**Explicit exclusions:**
+- Recommencement Settings and Recommencement Scenarios are deferred future enhancements. They are hidden in Development and no recommencement UI, logic or styles were promoted.
+- No change was made to the DLS 6.0 calculation engine as part of this release.
+
+**Validation summary:** The project owner reported that Tables 1–4 had been exercised across multiple constructed scenarios and were working as expected; Table 1 had also previously been used in a real T20 International context. The competition gate was separately tested and confirmed working. These were manual user tests, not an exhaustive automated test suite. The production code passed static promotion checks for required tabs, all four tables, the competition gate, production archive configuration, blue theme, build metadata and absence of recommencement code. No automated browser test was performed as part of this promotion.
+
+**Post-deployment action:** The project owner should perform a browser/PWA smoke test on the Production URL, including tab navigation, Appendix A calculations, competition gate, match save/archive upload and installed-PWA cache refresh. The release is promoted; this final hands-on production verification is outstanding.
