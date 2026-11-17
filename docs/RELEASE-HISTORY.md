@@ -524,7 +524,7 @@ A defect was identified during Table 1 testing when a Premier League scenario wa
 - Competition: Men's Premier League.
 - Time per over: 4.2 minutes.
 - A = 420; B = 202; C = 88; D = 0; E = 10; F = 78; G = 342.
-- H = G ÷ 4.2 = 81.43 minutes/over-equivalent.
+- H = G ÷ 4.2 = 81.43 overs (displayed to two decimal places).
 - I = ceiling(H ÷ 2) = 41 overs per team.
 
 The user confirmed that the revised gate works. This scenario is recorded as a control/validation example; it is not represented as a full independent test suite.
@@ -566,4 +566,4 @@ The Production release must retain the Production blue header and its existing p
 
 ### 8.8 Release approval record
 
-The user has stated that completion of the release documentation is the condition for approving this promotion. This entry records that instruction; it does not fabricate a signature, a separately signed form or an approval timestamp. The final release record must be completed with the actual promotion commit, release identifier, deployment verification and release date after those actions occur.
+The user stated that completion of the release documentation is the condition for approving this promotion and that, once completed, the release is approved. This documentation update satisfies that condition; the user's explicit release approval therefore applies to the proposed scope in section 8.7. This entry does not fabricate a signature or a separately signed form. The final release record must still be completed with the actual promotion commit, release identifier, deployment verification and release date after those actions occur.
