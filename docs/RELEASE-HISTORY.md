@@ -561,7 +561,7 @@ The Development hosting service-worker cache was advanced as required during the
 - `8375211becf8` — saved-match build metadata updated to 1.0.0.
 - `4d62acb1320d` — Production service-worker cache v15.
 
-### 8.7 Proposed Production promotion boundary
+### 8.7 Approved Production release scope
 
 The approved and promoted Version 2.0 scope includes the completed tab navigation, Appendix A Tables 1–4, competition-specific time-per-over selection, bowling-restriction and Powerplay calculations, Table 4 validation and the mandatory competition-selection gate.
 
@@ -572,9 +572,9 @@ The following are not included:
 
 The Production release must retain the Production blue header and its existing private archive configuration. The Development hosting repository's blank local-only upload configuration must not be copied over the Production configuration. Production is now identified as Version 2.0 · Build 1.0.0. The Version 1.0 · Build 0.5.4 release remains the previous formal release baseline.
 
-### 8.8 Release approval record
+### 8.8 Release approval and implementation record
 
-The user stated that completion of the release documentation is the condition for approving this promotion and that, once completed, the release is approved. This documentation update satisfies that condition; the user's explicit release approval therefore applies to the proposed scope in section 8.7. This entry does not fabricate a signature or a separately signed form. The final release record must still be completed with the actual promotion commit, release identifier, deployment verification and release date after those actions occur.
+The user stated that completion of the release documentation was the condition for approving this promotion and that, once completed, the release would be approved. The documentation was completed before the Production changes were committed. The user's explicit release approval therefore applies to the scope in section 8.7, and the Production promotion commits are recorded in section 8.6. No signature or separately signed form is fabricated. The GitHub Pages publication and hands-on browser/PWA smoke test have not been independently verified in this record and remain post-deployment checks.
 
 
 ### Version 2.0 — Appendix A umpire calculation worksheets
