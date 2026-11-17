@@ -1,7 +1,7 @@
 # DLS Umpire Calculator — User Guide
 
 **Document status:** Working guide; screenshots and final platform walkthrough remain outstanding  
-**Production baseline:** Version 2.0 · Build 1.0.1  
+**Production baseline:** Version 2.0 · Build 1.0.2  
 **Previous release:** Version 1.0 · Build 0.5.4  
 **Calculation standard:** ICC DLS 6.0
 
@@ -127,3 +127,12 @@ Recommencement Settings and Recommencement Scenarios are a future enhancement. T
 In the DLS Match Report section, open **Additional report details (optional)** to enter the report preparer's full name, competition, batting team names, venue and match date. The capturer name is optional and is displayed discreetly in the report footer when supplied.
 
 The printable report is arranged chronologically: match format and minimum overs; first innings and any interruption records; second innings and any interruption records; revised DLS target; and match result. Interruption tables are omitted when there are no interruptions. Use the browser's print dialog to print or save the report as a PDF.
+
+
+### Match worksheet interface — Build 1.0.2
+
+Select the match type first. It is presented on its own row; innings inputs are grouped with their respective innings. Use **Reset form** in the Match Setup heading to clear the worksheet.
+
+Calculations update automatically as valid inputs are entered. There is no Calculate / refresh button. A blank interruption row is available for each innings and can be left untouched when there is no interruption. The calculated second-innings allocation is displayed below the chasing-team interruption entries. The single penalty-runs field records runs awarded to Team 1 while Team 2 is batting.
+
+Recommencement Settings and Recommencement Scenarios remain deferred and are not part of this Production build.
