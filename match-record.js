@@ -13,7 +13,9 @@ export function createMatchArchiveRecord({ id, savedAt, input, summary, reportDe
   if (!input || typeof input !== 'object') throw new Error('Match input is missing.');
   const legacyFullName = [input.capturerFirstName, input.capturerSurname]
     .filter(value => value && value !== 'Name' && value !== 'Surname').join(' ');
-  const fullName = String(input.capturerFullName || input.capturedBy || legacyFullName).trim().replace(/\s+/g, ' ');
+  const capturedName = input.capturerFullName ||
+    (input.capturedBy && input.capturedBy !== 'Name Surname' ? input.capturedBy : legacyFullName);
+  const fullName = String(capturedName).trim().replace(/\s+/g, ' ');
   let capturedBy;
   if (fullName) {
     if (fullName.length > 120) throw new Error('Capturer name must be 120 characters or fewer.');
