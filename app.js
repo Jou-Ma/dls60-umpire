@@ -838,7 +838,9 @@ function renderSaved() {
     const info = document.createElement('div');
     const title = document.createElement('strong'); title.textContent = item.input.matchName || 'Unnamed match';
     const detail = document.createElement('small');
-    const savedCapturer = item.input.capturerFullName || item.input.capturedBy || `${item.input.capturerFirstName === 'Name' ? '' : (item.input.capturerFirstName || '')} ${item.input.capturerSurname === 'Surname' ? '' : (item.input.capturerSurname || '')}`.trim();
+    const savedCapturer = item.input.capturerFullName ||
+      (item.input.capturedBy && item.input.capturedBy !== 'Name Surname' ? item.input.capturedBy : '') ||
+      `${item.input.capturerFirstName === 'Name' ? '' : (item.input.capturerFirstName || '')} ${item.input.capturerSurname === 'Surname' ? '' : (item.input.capturerSurname || '')}`.trim();
     const capturer = savedCapturer ? `Captured by ${savedCapturer} · ` : 'Capturer name not entered · ';
     const uploadLabel = item.uploadStatus === 'uploaded' ? 'Uploaded' : item.uploadStatus === 'error' ? 'Upload failed — retry pending' : 'Pending upload';
     detail.textContent = `${capturer}${item.input.matchTypeLabel || item.input.matchType || 'Match'} · ${item.input.firstRuns} runs · ${item.summary.noResult ? 'No result' : `target ${item.summary.target}`} · ${uploadLabel} · ${new Date(item.savedAt).toLocaleString()}`;
