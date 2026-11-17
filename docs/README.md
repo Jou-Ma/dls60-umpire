@@ -1,8 +1,8 @@
 # DLS Umpire Calculator — Documentation
 
-**Current baseline:** Proof of Concept (PoC), Build 0.5.4  
-**Calculation standard:** ICC DLS 6.0  
-**Product version:** Not yet formally released
+**Production baseline:** Version 2.0 · Build 1.0.0  
+**Previous release:** Version 1.0 · Build 0.5.4  
+**Calculation standard:** ICC DLS 6.0
 
 This documentation set is maintained separately from the calculator interface. These Markdown files are the working source documents; publication as separate PDF documents can follow when the content is complete.
 
@@ -19,7 +19,7 @@ This documentation set is maintained separately from the calculator interface. T
 - The **build number** identifies a particular application build.
 - The **calculation standard** identifies the DLS methodology implemented.
 - A build does not automatically create a new product version.
-- The first formal product release will be Version 1.0. Subsequent major product milestones may use Version 2.0, Version 3.0, and so on. Intermediate fixes and development iterations are tracked by build number rather than decimal product versions.
+- The first formal product release was Version 1.0. Version 2.0 is now the current formal product release. Subsequent major product milestones may use Version 3.0, and so on. Intermediate fixes and development iterations are tracked by build number rather than decimal product versions.
 
 ## Document control
 
