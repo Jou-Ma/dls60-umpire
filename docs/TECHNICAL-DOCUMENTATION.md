@@ -1,7 +1,7 @@
 # DLS Umpire Calculator — Technical Documentation
 
 **Document status:** Working technical reference; detailed implementation inventory remains in progress  
-**Production baseline:** Version 2.0 · Build 1.0.1  
+**Production baseline:** Version 2.0 · Build 1.0.2  
 **Previous release:** Version 1.0 · Build 0.5.4  
 **Calculation standard:** ICC DLS 6.0
 
@@ -125,6 +125,13 @@ The bowling-restriction and Powerplay lookup exposes three outputs (Powerplay 1,
 
 The report renderer in `app.js` generates a standalone A4 portrait HTML document for browser printing/PDF output. It uses a chronological narrative layout, with interruption tables included only when the corresponding innings has event records. The DLS calculation engine, target and par-score calculations are not modified by the report renderer.
 
-The report preparer's name is captured as one optional `capturerFullName` value. Saved scenario normalization accepts the legacy `capturerFirstName` and `capturerSurname` properties and combines them when loading older scenarios. The archive record retains the established `capturedBy` object keys and adds the consolidated full-name value; the application build metadata is `1.0.1`.
+The report preparer's name is captured as one optional `capturerFullName` value. Saved scenario normalization accepts the legacy `capturerFirstName` and `capturerSurname` properties and combines them when loading older scenarios. The archive record retains the established `capturedBy` object keys and adds the consolidated full-name value; the application build metadata is `1.0.2`.
 
-The Production service-worker cache namespace is `dls60-umpire-shell-v16`. The Development hosting repository has a separate cache namespace and blank archive-upload configuration; neither is copied into Production.
+The Production service-worker cache namespace is `dls60-umpire-shell-v17`. The Development hosting repository has a separate cache namespace and blank archive-upload configuration; neither is copied into Production.
+
+
+## 13. Worksheet interface — Build 1.0.2
+
+The Production worksheet interface is aligned with the approved Development layout. Match type selection is isolated in Match Setup; innings scores and interruption entries are grouped by innings; second-innings overs are derived automatically from the first-innings allocation and interruption records; and penalty runs are captured in one field. General Calculate/status/error controls have been removed while field-level validation and automatic recalculation remain.
+
+The visible recommencement-scenario feature is excluded from Production and remains deferred. The Production archive upload configuration is preserved separately from the Development hosting configuration.
