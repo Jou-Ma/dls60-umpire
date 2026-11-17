@@ -928,10 +928,13 @@ async function uploadPendingMatches({ automatic = false } = {}) {
 $('syncNow').addEventListener('click', () => uploadPendingMatches());
 
 function inputFromUiRaw(input) {
+  const legacyCapturerName = `${input.capturerFirstName === 'Name' ? '' : (input.capturerFirstName || '')} ${input.capturerSurname === 'Surname' ? '' : (input.capturerSurname || '')}`.trim();
+  const capturerFullName = input.capturerFullName ||
+    (input.capturedBy && input.capturedBy !== 'Name Surname' ? input.capturedBy : legacyCapturerName);
   return {
     matchName: input.matchName || '',
-    capturerFullName: input.capturerFullName || input.capturedBy || `${input.capturerFirstName === 'Name' ? '' : (input.capturerFirstName || '')} ${input.capturerSurname === 'Surname' ? '' : (input.capturerSurname || '')}`.trim(),
-    capturedBy: input.capturedBy || input.capturerFullName || `${input.capturerFirstName === 'Name' ? '' : (input.capturerFirstName || '')} ${input.capturerSurname === 'Surname' ? '' : (input.capturerSurname || '')}`.trim(),
+    capturerFullName,
+    capturedBy: capturerFullName,
     matchType: input.matchType || 'odi',
     matchTypeLabel: input.matchTypeLabel || '',
     minOversPerSide: input.minOversPerSide ?? 20,
@@ -953,7 +956,9 @@ function loadScenario(input) {
   previousMatchType = $('matchType').value;
   applyMatchType(matchType, { presetOvers: false, preserveOtherMinimum: true });
   $('matchName').value = input.matchName || '';
-  $('reportCapturerFullName').value = input.capturerFullName || input.capturedBy || `${input.capturerFirstName === 'Name' ? '' : (input.capturerFirstName || '')} ${input.capturerSurname === 'Surname' ? '' : (input.capturerSurname || '')}`.trim();
+  const legacyCapturerName = `${input.capturerFirstName === 'Name' ? '' : (input.capturerFirstName || '')} ${input.capturerSurname === 'Surname' ? '' : (input.capturerSurname || '')}`.trim();
+  $('reportCapturerFullName').value = input.capturerFullName ||
+    (input.capturedBy && input.capturedBy !== 'Name Surname' ? input.capturedBy : legacyCapturerName);
   $('firstOvers').value = input.firstOvers;
   $('firstRuns').value = input.firstRuns;
   $('minOversPerSide').value = input.minOversPerSide ?? (MATCH_TYPES[matchType]?.minOvers ?? '');
