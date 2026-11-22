@@ -720,3 +720,23 @@ The user stated that completion of the release documentation was the condition f
 - The release source and documentation changes are committed to the Production branch. The latest release-documentation commit is [56cd29e](https://github.com/Jou-Ma/dls60-umpire/commit/56cd29e23203fe2f69f421802027467c0de3f400).
 - GitHub Pages publication and the live Production smoke test have not yet been independently confirmed.
 
+
+
+### Build 1.0.5 — Competition-specific PowerPlay Tables tab
+
+**Date:** 22 November 2026  
+**Product version:** 2.0  
+**Status:** Approved for Production following Development testing.
+
+**Changes introduced:**
+- Added a dedicated **PowerPlay Tables** application tab, separate from the DLS calculator and Over Calcs.
+- Added a Competition selector listing only competitions with available allocation data: T20, Women's T20, Promotion League – 45 Overs and Men's Premier League.
+- The selected competition's allocation table is displayed only after a selection is made.
+- T20 and Women's T20 show Powerplay 1 and Powerplay 2 in cricket overs.balls notation; Promotion League and Men's Premier League show their three Powerplay phases.
+- Reused the existing competition allocation data and calculation logic. No DLS calculation engine, Over Calcs formula or Powerplay allocation value was changed.
+- Preserved the Production blue branding, existing archive configuration and other Production-only settings.
+- Advanced the Production service-worker cache from `dls60-umpire-shell-v19` to `dls60-umpire-shell-v20`.
+
+**Validation:** The project owner confirmed the Development application was working, including the installed mobile app after reinstalling it to clear its stale cached version. The Development source was checked for the four supported competition options and reuse of existing allocation data. No automated browser test was performed as part of this promotion. Production browser/PWA smoke testing remains a post-publication check.
+
+**Production release:** Version 2.0 · Build 1.0.5.
