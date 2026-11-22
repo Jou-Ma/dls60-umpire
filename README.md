@@ -7,7 +7,7 @@
 
 A responsive umpire calculator for DLS 6.0 match scenarios. The application runs its calculations locally in the browser and can be installed on supported desktop and mobile devices.
 
-## Version 2.0 · Build 1.0.3 release scope
+## Version 2.0 · Build 1.0.4 release scope
 
 Version 2.0 builds on the Version 1.0 DLS calculator and adds the Appendix A umpire calculation worksheets described below. The DLS calculation engine remains based on the previously released Build 0.5.4 baseline; this release does not claim exhaustive validation of every possible DLS input combination.
 
@@ -105,18 +105,26 @@ Version numbering and build numbering are separate:
 - Future fixes and development iterations will receive new build identifiers and be recorded in the release history.
 
 
-## Version 2.0 · Build 1.0.3 — Match report
+## Version 2.0 · Build 1.0.4 — Match report
 
 The printable match report uses an A4 portrait chronological narrative layout. Match format and minimum overs are shown together; innings details are presented in sequence; interruption tables appear only when applicable; and the revised DLS target and match result remain prominent. The report preparer's identity is captured in one optional full-name field. This build changes report presentation and capturer-name handling only; the DLS 6.0 calculation engine and Appendix A calculations are unchanged.
 
 The project owner reviewed and accepted the Development report. Automated browser/PDF rendering tests were not performed by the developer; Production smoke testing remains a post-deployment check.
 
 
-## Version 2.0 · Build 1.0.3 — Worksheet interface
+## Version 2.0 · Build 1.0.4 — Worksheet interface
 
-Build 1.0.3 promotes the approved streamlined worksheet interface: match-type-first setup, Reset form in the Match Setup heading, automatic calculations without a Calculate button, innings-specific input grouping, visible calculated second-innings overs and one penalty-runs field. Blank interruption rows are available for both innings. The approved A4 match report remains in place. Recommencement scenarios remain deferred and excluded from Production.
+Build 1.0.4 promotes the approved streamlined worksheet interface: match-type-first setup, Reset form in the Match Setup heading, automatic calculations without a Calculate button, innings-specific input grouping, visible calculated second-innings overs and one penalty-runs field. Blank interruption rows are available for both innings. The approved A4 match report remains in place. Recommencement scenarios remain deferred and excluded from Production.
 
 
-## Version 2.0 · Build 1.0.3 — Report correction
+## Version 2.0 · Build 1.0.4 — Report correction
 
-Build 1.0.3 corrects a duplicated minimum-overs phrase on the A4 match report Format line. The minimum-overs requirement is displayed once for both preset and custom match types. No calculation or worksheet behaviour changes.
+Build 1.0.4 corrects a duplicated minimum-overs phrase on the A4 match report Format line. The minimum-overs requirement is displayed once for both preset and custom match types. No calculation or worksheet behaviour changes.
+
+
+## Build 1.0.4 — T20 and Over Calcs update
+
+- Corrects the T20 preset minimum overs per side from 55 to 5.
+- Renames the second tab to **Over Calcs**.
+- Adds the reduced-innings T20 Powerplay reference table for 5–20 overs, with cricket overs.balls notation and the USSA B T20 Playing Conditions 2026 clause 27.7.6 source.
+- No DLS calculation-engine or Over Calcs formula changes.
