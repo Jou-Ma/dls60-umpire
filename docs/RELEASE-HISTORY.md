@@ -2,11 +2,11 @@
 
 **Document status:** Living development and release record; reconstructed from project conversations and available Git history  
 **Application status:** Version 2.0 released  
-**Production baseline:** Version 2.0 · Build 1.0.2  
+**Production baseline:** Version 2.0 · Build 1.0.4  
 **Previous release:** Version 1.0 · Build 0.5.4  
 **Calculation standard:** ICC DLS 6.0  
 **Current product version:** 2.0  
-**History coverage:** Initial prototype through Version 2.0 · Build 1.0.2 (17 November 2026)
+**History coverage:** Initial prototype through Version 2.0 · Build 1.0.4 (22 November 2026)
 
 > **Record-keeping note:** The early builds (0.1.0–0.5.0) were developed and discussed in the project conversation. The GitHub repository does not preserve a complete, one-commit-per-build source history for those early iterations; some source files were uploaded in batches. Their entries below are therefore reconstructed from contemporaneous project notes and user testing, not represented as verified individual Git commits. Git commit timestamps are recorded where available. All dates are 15 November 2026 (South African local date); exact times are shown only where supported by Git commit timestamps.
 
@@ -691,3 +691,23 @@ The user stated that completion of the release documentation was the condition f
 **Validation:** The project owner confirmed the correction works in Development. Production source inspection confirms the report uses the same corrected renderer. The Production service-worker cache is advanced to `dls60-umpire-shell-v18`. Browser/PDF rendering smoke testing remains a post-publication check.
 
 **Production release:** Version 2.0 · Build 1.0.3.
+
+
+### Build 1.0.4 — T20 minimum-overs correction and Over Calcs reference
+
+**Date:** 22 November 2026  
+**Product version:** 2.0  
+**Status:** Approved for Production following Development testing.
+
+**Changes introduced:**
+- Corrected the Twenty20 preset minimum-overs value from **55** to **5** overs per side.
+- Renamed the second application tab from **Appendix A** to **Over Calcs**. The worksheet calculations and underlying Appendix A references are unchanged.
+- Added the reduced-innings T20 Powerplay allocation reference table to the Over Calcs tab, covering innings lengths of 5–20 overs. The allocation applies to either innings.
+- Included the cricket overs.balls notation explanation and source reference: USSA B T20 Playing Conditions 2026, clause 27.7.6; the same table is included in the club T20 Playing Conditions.
+- Advanced the Production service-worker cache from `dls60-umpire-shell-v18` to `dls60-umpire-shell-v19`.
+
+**Calculation impact:** The DLS 6.0 calculation engine and Over Calcs formulas are unchanged. The T20 preset minimum-overs value is corrected; the Powerplay table is a static reference and does not alter calculations.
+
+**Validation:** The project owner tested both the DLS calculator and Over Calcs in Development and confirmed that both produced the expected results. Production browser/PWA smoke testing remains a post-publication check.
+
+**Production release:** Version 2.0 · Build 1.0.4.
