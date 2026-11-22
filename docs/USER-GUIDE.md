@@ -1,7 +1,7 @@
 # DLS Umpire Calculator — User Guide
 
 **Document status:** Working guide; screenshots and final platform walkthrough remain outstanding  
-**Production baseline:** Version 2.0 · Build 1.0.3  
+**Production baseline:** Version 2.0 · Build 1.0.4  
 **Previous release:** Version 1.0 · Build 0.5.4  
 **Calculation standard:** ICC DLS 6.0
 
@@ -141,3 +141,8 @@ Recommencement Settings and Recommencement Scenarios remain deferred and are not
 ### Match report correction — Build 1.0.3
 
 The Format line displays the match type, scheduled overs and minimum overs per side. The minimum-overs requirement appears once.
+
+
+### Over Calcs and T20 Powerplay reference — Build 1.0.4
+
+The second application tab is labelled **Over Calcs**. It contains the time-based calculation worksheets and a reduced-innings T20 Powerplay reference table. The table gives the Powerplay allocation for innings lengths from 5 to 20 overs and applies to either innings. Overs are shown in cricket notation: for example, 5.4 means 5 overs and 4 balls.
