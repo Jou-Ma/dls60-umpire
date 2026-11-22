@@ -1,7 +1,7 @@
 # DLS Umpire Calculator — Testing & Validation Report
 
 **Document status:** Ongoing validation record  
-**Production baseline:** Version 2.0 · Build 1.0.2  
+**Production baseline:** Version 2.0 · Build 1.0.4  
 **Previous DLS engine baseline:** Version 1.0 · Build 0.5.4  
 **Calculation standard:** ICC DLS 6.0
 
@@ -225,3 +225,20 @@ The recommencement scenario prototype is not accepted for this release. The user
 | Production cache | Advanced to `dls60-umpire-shell-v18` |
 
 **Limitations:** No automated browser or PDF-rendering test was run by the developer. A Production smoke test remains required after publication.
+
+
+## Build 1.0.4 — T20 minimum overs and Over Calcs reference
+
+| Area | Validation |
+|---|---|
+| T20 preset | Corrected minimum overs per side from 55 to 5 |
+| Development DLS testing | Project owner tested and confirmed expected results |
+| Development Over Calcs testing | Project owner tested and confirmed expected results |
+| Second tab label | Renamed from Appendix A to Over Calcs |
+| Reduced-innings Powerplay table | 16 rows for innings lengths 5–20 overs; source is USSA B T20 Playing Conditions 2026, clause 27.7.6 |
+| Overs notation | Explicitly identifies the decimal suffix as balls, not a decimal fraction |
+| Calculation engine | Unchanged |
+| Over Calcs formulas | Unchanged |
+| Production cache | Advanced to `dls60-umpire-shell-v19` |
+
+**Limitations:** Development tests were confirmed by the project owner. Production browser/PWA smoke testing remains required after publication.
