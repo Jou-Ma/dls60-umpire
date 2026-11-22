@@ -740,3 +740,27 @@ The user stated that completion of the release documentation was the condition f
 **Validation:** The project owner confirmed the Development application was working, including the installed mobile app after reinstalling it to clear its stale cached version. The Development source was checked for the four supported competition options and reuse of existing allocation data. No automated browser test was performed as part of this promotion. Production browser/PWA smoke testing remains a post-publication check.
 
 **Production release:** Version 2.0 · Build 1.0.5.
+
+
+### Build 1.0.6 — Remove legacy T20 PowerPlay table from Over Calcs
+
+**Date:** 22 November 2026  
+**Product version:** 2.0  
+**Status:** Approved for Production following Development confirmation and explicit promotion approval.
+
+**Correction introduced:**
+- Removed the obsolete static **Reduced-innings Powerplay allocation** reference table from the **Over Calcs** tab.
+- The dedicated **PowerPlay Tables** tab remains the single in-app location for competition-specific PowerPlay reference tables.
+- The PowerPlay Tables tab, its competition selector and its existing allocation data remain unchanged.
+
+**Calculation impact:** None. No DLS calculation engine, Over Calcs formula, PowerPlay allocation value or JavaScript calculation logic was changed.
+
+**Validation:** The project owner confirmed that the corresponding Development behaviour is correct: selecting T20 no longer displays the reduced-innings PowerPlay table in Over Calcs. The Production source correction was checked to remove only the obsolete static section while preserving the surrounding Over Calcs worksheet. No automated browser test was performed as part of this correction; live Production browser/PWA confirmation remains pending.
+
+**Production implementation:**
+- Repository: `Jou-Ma/dls60-umpire`, branch `main`.
+- Removed the obsolete section from `index.html`; updated the displayed build to 1.0.6.
+- Advanced the Production service-worker cache from `dls60-umpire-shell-v20` to `dls60-umpire-shell-v21`.
+- `app.js` and the dedicated PowerPlay Tables renderer were not changed.
+
+**Production release:** Version 2.0 · Build 1.0.6.
