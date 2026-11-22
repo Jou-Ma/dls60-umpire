@@ -1,7 +1,7 @@
 # DLS Umpire Calculator — Technical Documentation
 
 **Document status:** Working technical reference; detailed implementation inventory remains in progress  
-**Production baseline:** Version 2.0 · Build 1.0.2  
+**Production baseline:** Version 2.0 · Build 1.0.4  
 **Previous release:** Version 1.0 · Build 0.5.4  
 **Calculation standard:** ICC DLS 6.0
 
@@ -139,4 +139,9 @@ The visible recommencement-scenario feature is excluded from Production and rema
 
 ## 14. Match report format-line correction — Build 1.0.3
 
-The report renderer removes a previously embedded minimum-overs suffix from the match-type label before appending the separately captured minimum-overs value. This prevents duplicate wording for preset and custom match types. No calculation or saved-data logic is affected. Production cache namespace: `dls60-umpire-shell-v18`.
+The report renderer removes a previously embedded minimum-overs suffix from the match-type label before appending the separately captured minimum-overs value. This prevents duplicate wording for preset and custom match types. No calculation or saved-data logic is affected. Production cache namespace: `dls60-umpire-shell-v19`.
+
+
+## 15. T20 and Over Calcs update — Build 1.0.4
+
+The T20 match preset now sets the minimum overs per side to 5. The second application tab is labelled **Over Calcs** and includes a static reduced-innings T20 Powerplay reference table (5–20 overs). The table is not used by the calculation engine. The DLS 6.0 engine and Over Calcs formulas are unchanged. The Production service-worker cache namespace is `dls60-umpire-shell-v19`.
