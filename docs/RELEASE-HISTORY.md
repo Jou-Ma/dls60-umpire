@@ -711,3 +711,12 @@ The user stated that completion of the release documentation was the condition f
 **Validation:** The project owner tested both the DLS calculator and Over Calcs in Development and confirmed that both produced the expected results. Production browser/PWA smoke testing remains a post-publication check.
 
 **Production release:** Version 2.0 · Build 1.0.4.
+
+**Production implementation record:**
+- Repository: `Jou-Ma/dls60-umpire`, branch `main`.
+- Application files: `index.html` and `app.js`.
+- PWA cache invalidation: `sw.js`, advanced to `dls60-umpire-shell-v19`.
+- Supporting documentation updated: README, documentation index, user guide, technical documentation and testing/validation report.
+- The release source and documentation changes are committed to the Production branch. The latest release-documentation commit is [56cd29e](https://github.com/Jou-Ma/dls60-umpire/commit/56cd29e23203fe2f69f421802027467c0de3f400).
+- GitHub Pages publication and the live Production smoke test have not yet been independently confirmed.
+
