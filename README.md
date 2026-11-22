@@ -1,7 +1,7 @@
 # DLS 6.0 Umpire Calculator — Version 2.0
 
 **Release:** Version 2.0  
-**Included build:** 1.0.3  
+**Included build:** 1.0.4  
 **Calculation model:** DLS 6.0  
 **Application type:** Offline-first Progressive Web App (PWA)
 
