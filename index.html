@@ -29,7 +29,7 @@
 
     <nav class="app-tabs" role="tablist" aria-label="Application sections">
       <button class="app-tab active" id="tab-button-dls" type="button" role="tab" aria-selected="true" aria-controls="tab-dls" data-app-tab="dls">DLS 6.0</button>
-      <button class="app-tab" id="tab-button-a" type="button" role="tab" aria-selected="false" aria-controls="tab-a" data-app-tab="a" tabindex="-1">Appendix A</button>
+      <button class="app-tab" id="tab-button-a" type="button" role="tab" aria-selected="false" aria-controls="tab-a" data-app-tab="a" tabindex="-1">Over Calcs</button>
       <button class="app-tab" id="tab-button-help" type="button" role="tab" aria-selected="false" aria-controls="tab-help" data-app-tab="help" tabindex="-1">Help</button>
     </nav>
     <section class="app-tab-panel active" id="tab-dls" role="tabpanel" aria-labelledby="tab-button-dls">
@@ -166,15 +166,15 @@
     </section>
 
     <section class="disclaimer">
-      <strong>Release status:</strong> Version 2.0 · Build 1.0.3. Includes the approved A4 narrative match report and streamlined automatic-calculation worksheet. The browser engine has been compared with selected outputs from the supplied ICC DLS 6.0 application, including multi-interruption cases and over-by-over / ball-by-ball tables. These are targeted validation scenarios, not exhaustive verification of every possible input combination. For official match decisions, use the authorised DLS application and follow the applicable playing conditions.
+      <strong>Release status:</strong> Version 2.0 · Build 1.0.4. Includes the approved A4 narrative match report and streamlined automatic-calculation worksheet. The browser engine has been compared with selected outputs from the supplied ICC DLS 6.0 application, including multi-interruption cases and over-by-over / ball-by-ball tables. These are targeted validation scenarios, not exhaustive verification of every possible input combination. For official match decisions, use the authorised DLS application and follow the applicable playing conditions.
       <p>DLS is proprietary. This independent tool is not an ICC product and is not certified, endorsed or approved by the ICC. No official DLS software or JAR is distributed with this application.</p>
     </section>
     </section>
 
     <section class="app-tab-panel" id="tab-a" role="tabpanel" aria-labelledby="tab-button-a" hidden>
       <div class="appendix-heading">
-        <div><div class="step-label">TIME-BASED CALCULATIONS</div><h1>Appendix A</h1><p class="panel-hint">Time-based calculation sheets for delays and interruptions. Enter the relevant inputs; calculated fields update automatically. Use this tab only when the applicable match conditions require these time-based calculations.</p></div>
-        <div class="appendix-heading-actions"><span class="tag">Draft layout</span><button class="button button-secondary" id="resetAppendixA" type="button">Reset Appendix A</button></div>
+        <div><div class="step-label">TIME-BASED CALCULATIONS</div><h1>Over Calcs</h1><p class="panel-hint">Time-based calculation sheets for delays and interruptions. Enter the relevant inputs; calculated fields update automatically. Use this tab only when the applicable match conditions require these time-based calculations.</p></div>
+        <div class="appendix-heading-actions"><span class="tag">Draft layout</span><button class="button button-secondary" id="resetAppendixA" type="button">Reset Over Calcs</button></div>
       </div>
       <section class="panel over-calc-settings" aria-label="Competition settings">
         <div class="panel-heading"><div><div class="step-label">MATCH CONDITIONS</div><h2>Competition settings</h2><p class="panel-hint">Select the applicable competition / match type first. All worksheet entries remain locked until this selection sets the correct time allowance.</p></div></div>
@@ -196,6 +196,40 @@
           </label>
         </div>
       </section>
+      <section class="panel appendix-panel" aria-labelledby="t20PowerplayHeading">
+        <div class="panel-heading">
+          <div><div class="step-label">T20 POWERPLAY REFERENCE</div><h2 id="t20PowerplayHeading">Reduced-innings Powerplay allocation</h2>
+            <p class="panel-hint">Use this table when the number of overs in a T20 innings is reduced. The allocation applies to either innings.</p>
+          </div>
+          <span class="tag">Clause 27.7.6</span>
+        </div>
+        <div class="calc-table-wrap">
+          <table class="calc-sheet" aria-describedby="t20PowerplayNote">
+            <thead><tr><th scope="col">Total overs in innings</th><th scope="col">Powerplay overs</th></tr></thead>
+            <tbody>
+              <tr><td>5</td><td>1.3</td></tr>
+              <tr><td>6</td><td>1.5</td></tr>
+              <tr><td>7</td><td>2.1</td></tr>
+              <tr><td>8</td><td>2.2</td></tr>
+              <tr><td>9</td><td>2.4</td></tr>
+              <tr><td>10</td><td>3.0</td></tr>
+              <tr><td>11</td><td>3.2</td></tr>
+              <tr><td>12</td><td>3.4</td></tr>
+              <tr><td>13</td><td>3.5</td></tr>
+              <tr><td>14</td><td>4.1</td></tr>
+              <tr><td>15</td><td>4.3</td></tr>
+              <tr><td>16</td><td>4.5</td></tr>
+              <tr><td>17</td><td>5.1</td></tr>
+              <tr><td>18</td><td>5.2</td></tr>
+              <tr><td>19</td><td>5.4</td></tr>
+              <tr><td>20</td><td>6.0</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="appendix-footnote" id="t20PowerplayNote"><strong>Overs notation:</strong> The figure after the decimal point represents balls, not a decimal fraction. For example, 5.4 means 5 overs and 4 balls. A standard 20-over innings has a 6.0-over Powerplay.</p>
+        <p class="appendix-footnote">Source: USSA B T20 Playing Conditions 2026, clause 27.7.6. The same table is included in the club T20 Playing Conditions.</p>
+      </section>
+
       <section class="panel appendix-panel">
         <div class="panel-heading"><div><div class="step-label">TABLE 1</div><h2>First-innings delay or interruptions</h2><p class="panel-hint">Use when a delay or interruption occurs during the First Innings.</p></div></div>
         <h3 class="calc-group-title">Time</h3>
@@ -269,7 +303,7 @@
         </tbody></table></div>
       </section>
 
-      <p class="appendix-footnote">Appendix A calculation worksheet. Calculated fields update automatically from the supplied Appendix A formulas. Confirm the applicable Playing Conditions before using the outputs for a match.</p>
+      <p class="appendix-footnote">Over Calcs worksheet. Calculated fields update automatically from the supplied Appendix A formulas. Confirm the applicable Playing Conditions before using the outputs for a match.</p>
     </section>
     <section class="app-tab-panel placeholder-panel" id="tab-help" role="tabpanel" aria-labelledby="tab-button-help" hidden>
       <div class="appendix-heading"><div><div class="step-label">REFERENCE AND GUIDANCE</div><h1>Help</h1><p class="panel-hint">Guidance for using the calculator, understanding the Appendix workflows and reading DLS match reports will be organised here.</p></div></div>
@@ -283,7 +317,7 @@
     </section>
 
   </main>
-  <footer class="footer"><span>DLS 6.0 · Offline-first umpire tool</span><span id="appVersion">Version 2.0 · Build 1.0.3</span></footer>
+  <footer class="footer"><span>DLS 6.0 · Offline-first umpire tool</span><span id="appVersion">Version 2.0 · Build 1.0.4</span></footer>
   <script type="module" src="app.js"></script>
 </body>
 </html>
